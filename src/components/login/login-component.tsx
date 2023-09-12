@@ -4,7 +4,7 @@ import { UsuarioLogin } from '@/contexts/interfaces/types';
 import { useForm } from '@/hooks/use-form';
 import { apiUrl } from '@/servicios/environment';
 import { useRouter } from 'next/navigation';
-import { useContext, useState } from 'react';
+import { FormEvent, useContext, useState } from 'react';
 import { Button, Modal } from 'react-bootstrap';
 import Swal from 'sweetalert2';
 import styles from './login.module.css';
@@ -62,6 +62,9 @@ export const LoginComponent: React.FC<appsProps> = ({ buttonText = 'Ingresar' })
     clave: '',
     rutrecu: '',
   });
+  const input = {
+    clave: false,
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -233,6 +236,16 @@ export const LoginComponent: React.FC<appsProps> = ({ buttonText = 'Ingresar' })
     onResetForm();
   };
 
+  const [visibleInput, setvisibleInput] = useState(input);
+
+  const verClave = (e: FormEvent<HTMLButtonElement>, textbox: string) => {
+    e.preventDefault();
+    setvisibleInput({
+      ...visibleInput,
+      [textbox]: !visibleInput.clave,
+    });
+  };
+
   return (
     <>
       <div
@@ -320,14 +333,29 @@ export const LoginComponent: React.FC<appsProps> = ({ buttonText = 'Ingresar' })
         </div>
         <div className="mb-3">
           <label htmlFor="password">Clave de acceso:</label>
-          <input
-            type="password"
-            name="clave"
-            className="form-control"
-            value={clave}
-            onChange={onInputChange}
-            required
-          />
+          <div className="input-group mb-3">
+            <input
+              type={visibleInput.clave ? 'text' : 'password'}
+              className="form-control"
+              name="clave"
+              aria-describedby="button-addon2"
+              value={clave}
+              onChange={onInputChange}
+              required
+            />
+            <button
+              className="btn btn-primary"
+              type="button"
+              id="button-addon2"
+              title={visibleInput.clave ? 'Ocultar clave' : 'Ver clave'}
+              onClick={(e) => verClave(e, 'clave')}>
+              {visibleInput.clave ? (
+                <i className="bi bi-eye-slash-fill"></i>
+              ) : (
+                <i className="bi bi-eye-fill"></i>
+              )}
+            </button>
+          </div>
         </div>
         <div className={'mt-2 ' + styles.btnlogin}>
           <label
