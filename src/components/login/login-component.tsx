@@ -62,8 +62,11 @@ export const LoginComponent: React.FC<appsProps> = ({ buttonText = 'Ingresar' })
     clave: '',
     rutrecu: '',
   });
-  const input = {
+  const input: any = {
     clave: false,
+    claveanterior: false,
+    clavenuevauno: false,
+    clavenuevados: false,
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -240,9 +243,10 @@ export const LoginComponent: React.FC<appsProps> = ({ buttonText = 'Ingresar' })
 
   const verClave = (e: FormEvent<HTMLButtonElement>, textbox: string) => {
     e.preventDefault();
+
     setvisibleInput({
       ...visibleInput,
-      [textbox]: !visibleInput.clave,
+      [textbox]: !visibleInput[textbox],
     });
   };
 
@@ -274,31 +278,81 @@ export const LoginComponent: React.FC<appsProps> = ({ buttonText = 'Ingresar' })
               </h6>
               <br />
               <label htmlFor="transitoria">Contraseña transitoria</label>
-              <input
-                name="claveanterior"
-                value={claveanterior}
-                onChange={onInputChange}
-                type="password"
-                className="form-control"
-              />
-              <br />
+
+              <div className="input-group mb-3">
+                <input
+                  type={visibleInput.claveanterior ? 'text' : 'password'}
+                  className="form-control"
+                  name="claveanterior"
+                  aria-describedby="button-addon2"
+                  value={claveanterior}
+                  onChange={onInputChange}
+                  required
+                />
+                <button
+                  className="btn btn-primary"
+                  type="button"
+                  id="button-addon2"
+                  title={visibleInput.claveanterior ? 'Ocultar clave' : 'Ver clave'}
+                  onClick={(e) => verClave(e, 'claveanterior')}>
+                  {visibleInput.claveanterior ? (
+                    <i className="bi bi-eye-slash-fill"></i>
+                  ) : (
+                    <i className="bi bi-eye-fill"></i>
+                  )}
+                </button>
+              </div>
+
               <label htmlFor="claveuno">Contraseña Nueva</label>
-              <input
-                name="clavenuevauno"
-                value={clavenuevauno}
-                onChange={onInputChange}
-                type="password"
-                className="form-control"
-              />
-              <br />
+              <div className="input-group mb-3">
+                <input
+                  type={visibleInput.clavenuevauno ? 'text' : 'password'}
+                  className="form-control"
+                  name="clavenuevauno"
+                  aria-describedby="button-addon2"
+                  value={clavenuevauno}
+                  onChange={onInputChange}
+                  required
+                />
+                <button
+                  className="btn btn-primary"
+                  type="button"
+                  id="button-addon2"
+                  title={visibleInput.clavenuevauno ? 'Ocultar clave' : 'Ver clave'}
+                  onClick={(e) => verClave(e, 'clavenuevauno')}>
+                  {visibleInput.clavenuevauno ? (
+                    <i className="bi bi-eye-slash-fill"></i>
+                  ) : (
+                    <i className="bi bi-eye-fill"></i>
+                  )}
+                </button>
+              </div>
+
               <label htmlFor="claveuno">Repetir Contraseña</label>
-              <input
-                name="clavenuevados"
-                value={clavenuevados}
-                onChange={onInputChange}
-                type="password"
-                className="form-control"
-              />
+
+              <div className="input-group mb-3">
+                <input
+                  type={visibleInput.clavenuevados ? 'text' : 'password'}
+                  className="form-control"
+                  name="clavenuevados"
+                  aria-describedby="button-addon2"
+                  value={clavenuevados}
+                  onChange={onInputChange}
+                  required
+                />
+                <button
+                  className="btn btn-primary"
+                  type="button"
+                  id="button-addon2"
+                  title={visibleInput.clavenuevados ? 'Ocultar clave' : 'Ver clave'}
+                  onClick={(e) => verClave(e, 'clavenuevados')}>
+                  {visibleInput.clavenuevados ? (
+                    <i className="bi bi-eye-slash-fill"></i>
+                  ) : (
+                    <i className="bi bi-eye-fill"></i>
+                  )}
+                </button>
+              </div>
             </div>
             <div className="modal-footer">
               <button type="button" className="btn btn-secondary" onClick={OncloseModal}>
