@@ -5,6 +5,7 @@ import Titulo from '@/components/titulo';
 import { InscribeContext } from '@/contexts';
 import { useMergeFetchArray } from '@/hooks/use-merge-fetch';
 import { Empleador } from '@/interface/adscripcion';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useContext, useEffect, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
@@ -718,11 +719,14 @@ const AdscripcionPage: React.FC<{}> = ({}) => {
           </div>
         </div>
 
-        <div className="row mt-4">
-          <div className="d-flex flex-row-reverse">
-            <button type="submit" className={'btn btn-primary'}>
+        <div className="row mt-5">
+          <div className="d-flex flex-column flex-sm-row flex-sm-row-reverse">
+            <button type="submit" className="btn btn-primary">
               Siguiente
             </button>
+            <Link href="/" className="btn btn-danger mt-2 mt-sm-0 me-0 me-sm-2">
+              Volver
+            </Link>
           </div>
         </div>
       </form>
