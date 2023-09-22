@@ -2,7 +2,7 @@
 import { AuthContext } from '@/contexts/auth-context';
 import { UsuarioLogin } from '@/contexts/interfaces/types';
 import { useForm } from '@/hooks/use-form';
-import { apiUrl } from '@/servicios/environment';
+import { apiUrl, urlRedirigirEnLogin } from '@/servicios/environment';
 import { useRouter } from 'next/navigation';
 import { FormEvent, useContext, useState } from 'react';
 import { Button, Modal } from 'react-bootstrap';
@@ -105,12 +105,14 @@ export const LoginComponent: React.FC<appsProps> = ({ buttonText = 'Ingresar' })
 
     if (respuesta.resp.statusCode == 200) {
       if (respuesta.resp.message.includes('Bearer')) {
-        return Swal.fire({
+        await Swal.fire({
           html: 'Sesión iniciada correctamente',
           icon: 'success',
           timer: 2000,
           showConfirmButton: false,
         });
+
+        router.push(urlRedirigirEnLogin());
       }
     }
 

@@ -1,6 +1,8 @@
 import { UsuarioLogin } from '@/contexts/interfaces/types';
 import { respLogin } from '@/interface/adscripcion';
 import { apiUrl } from '@/servicios/environment';
+import jwt_decode from 'jwt-decode';
+import { setCookie } from 'nookies';
 
 let respuesta: respLogin = {
   data: [],
@@ -23,13 +25,19 @@ export const LoginUsuario = async (usuario: UsuarioLogin) => {
     if (data.ok) {
       let token = await data.text();
 
-      if (token.includes('Bearer'))
+      if (token.includes('Bearer')) {
+        const tokenDecodificado: any = jwt_decode(token.substring('Bearer '.length));
+        const maxAge = tokenDecodificado.exp - tokenDecodificado.iat;
+
+        setCookie(null, 'token', token, { maxAge, path: '/' });
+
         return {
           resp: {
             message: token,
             statusCode: 200,
           },
         };
+      }
     }
 
     resp = await data.json();
