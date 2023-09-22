@@ -8,6 +8,7 @@ import { Empleador } from '@/interface/adscripcion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useContext, useEffect, useState } from 'react';
+import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { ClipLoader } from 'react-spinners';
 import { formatRut, validateRut } from 'rutlib';
@@ -460,7 +461,17 @@ const AdscripcionPage: React.FC<{}> = ({}) => {
 
           <div className="col-12 col-md-6 col-lg-4 col-xl-3 position-relative">
             <label htmlFor="numero" className="form-label">
-              Número (*)
+              <span>Número (*)</span>
+              <OverlayTrigger
+                placement="top"
+                delay={{ show: 250, hide: 400 }}
+                overlay={(props) => (
+                  <Tooltip id="button-tooltip" {...props}>
+                    Ingresar "S/N" si no tiene número
+                  </Tooltip>
+                )}>
+                <i className="ms-2 text-primary bi bi-info-circle" style={{ fontSize: '16px' }}></i>
+              </OverlayTrigger>
             </label>
             <input
               id="numero"
@@ -472,20 +483,24 @@ const AdscripcionPage: React.FC<{}> = ({}) => {
                   message: 'Este campo es obligatorio',
                 },
                 pattern: {
-                  value: /^\d{1,20}$/g,
-                  message: 'Debe contener solo dígitos',
+                  value: /^(\d{1,20}|[Ss]\/[Nn])$/g,
+                  message: 'Debe contener solo dígitos o S/N',
                 },
                 maxLength: {
                   value: 20,
                   message: 'No puede tener más de 20 dígitos',
                 },
-                onChange: (event) => {
-                  const regex = /[^0-9]/g; // Hace match con cualquier caracter que no sea un numero
+                onChange: (event: any) => {
+                  const regex = /[^0-9SsnN\/]/g;
                   const valor = event.target.value as string;
 
                   if (regex.test(valor)) {
-                    setValue('numero', valor.replaceAll(regex, ''));
+                    const valorSoloDigitos = valor.replaceAll(regex, '');
+                    setValue('numero', valorSoloDigitos);
                   }
+                },
+                onBlur: (event: any) => {
+                  setValue('numero', (event.target.value as string).toUpperCase());
                 },
               })}
             />
@@ -507,7 +522,7 @@ const AdscripcionPage: React.FC<{}> = ({}) => {
                   message: 'No puede tener más de 20 carcateres',
                 },
                 pattern: {
-                  value: /^[a-zA-Z0-9#]+$/g,
+                  value: /^[a-zA-Z0-9#\s]+$/g,
                   message: 'Solo debe tener números, letras o #',
                 },
                 onBlur: () => trimInput('block'),
