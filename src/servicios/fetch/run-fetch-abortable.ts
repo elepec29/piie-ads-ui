@@ -26,7 +26,6 @@ import { ErrorFetchDesconocido, HttpError } from './errores';
  *           {@link FetchError}.
  *  - `[1]`: Un callback para abortar la llamada.
  */
-
 export const runFetchAbortable = <T = any>(
   url: RequestInfo | URL,
   init?: RequestInit,

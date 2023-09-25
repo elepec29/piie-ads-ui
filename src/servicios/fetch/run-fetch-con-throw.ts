@@ -1,4 +1,5 @@
 import { ErrorFetchDesconocido, HttpError } from './errores';
+import { FetchOptions, defaultFetchOptions } from './fetch-options';
 
 /**
  * una llamada a `fetch` y devuelve el valor de esta o lanza un error si algo sale mal.
@@ -20,18 +21,26 @@ import { ErrorFetchDesconocido, HttpError } from './errores';
  * @param init
  * El mismo que `fetch`
  *
+ * @param options
+ * Opciones para configurar el fetch
+ *
  * @returns
  * Una promesa que resuelve al valor del fetch envuelto. El error sera de tipo {@link FetchError}
  */
 export const runFetchConThrow = async <T = any>(
   url: RequestInfo | URL,
   init?: RequestInit,
+  options?: FetchOptions,
 ): Promise<T> => {
+  const opts = {
+    ...defaultFetchOptions,
+    ...options,
+  };
   const fetchRequest = !init ? fetch(url) : fetch(url, init);
 
-  const res = await fetchRequest;
-
   try {
+    const res = await fetchRequest;
+
     if (!res.ok) {
       throw new HttpError(
         res.status,
@@ -43,8 +52,12 @@ export const runFetchConThrow = async <T = any>(
     }
 
     const contentLengthHeader = res.headers.get('Content-Length');
-    if (contentLengthHeader && parseInt(contentLengthHeader, 10) !== 0) {
-      return res.json() as Promise<T>;
+    if (contentLengthHeader && parseInt(contentLengthHeader) !== 0) {
+      if (opts.bodyAs === 'text') {
+        return res.text() as Promise<T>;
+      } else {
+        return res.json() as Promise<T>;
+      }
     } else {
       return undefined as unknown as Promise<any>;
     }

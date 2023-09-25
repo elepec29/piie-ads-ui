@@ -1,9 +1,6 @@
-import insemp from '@/img/inscribeem.png';
-
 import { ButtonImage } from '@/components/button-image';
 import { LoginComponent } from '@/components/login/login-component';
-
-// metadata.title +='- Inicio';
+import insemp from '@/img/inscribeem.png';
 
 export default function Home() {
   return (
@@ -13,9 +10,7 @@ export default function Home() {
           <ButtonImage url="/adscripcion" text="Inscribe Entidad Empleadora" img={insemp.src} />
         </div>
         <div className="col-md-6">
-          {/* <ButtonImage url='/tramitacion' text='Ingreso al portal' img={redcross.src} /> */}
-
-          <LoginComponent buttonText="Ingresar" />
+          <LoginComponent />
         </div>
       </div>
     </div>
