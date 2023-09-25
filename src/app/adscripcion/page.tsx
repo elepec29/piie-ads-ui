@@ -467,7 +467,7 @@ const AdscripcionPage: React.FC<{}> = ({}) => {
                 delay={{ show: 250, hide: 400 }}
                 overlay={(props) => (
                   <Tooltip id="button-tooltip" {...props}>
-                    Ingresar "S/N" si no tiene número
+                    {'Ingresar "S/N" si no tiene número'}
                   </Tooltip>
                 )}>
                 <i className="ms-2 text-primary bi bi-info-circle" style={{ fontSize: '16px' }}></i>
