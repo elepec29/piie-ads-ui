@@ -48,7 +48,7 @@ export const LoginComponent: React.FC<{}> = ({}) => {
 
   const handleLoginUsuario: SubmitHandler<FormularioLogin> = async ({ rut, clave }) => {
     try {
-      await login(rut, clave);
+      const usuario = await login(rut, clave);
 
       await Swal.fire({
         html: 'Sesión iniciada correctamente',
@@ -57,7 +57,7 @@ export const LoginComponent: React.FC<{}> = ({}) => {
         showConfirmButton: false,
       });
 
-      router.push(urlRedirigirEnLogin());
+      router.push(urlRedirigirEnLogin(usuario));
     } catch (error) {
       let messageError = '';
 
