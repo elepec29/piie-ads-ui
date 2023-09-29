@@ -2,6 +2,7 @@ version: '3'
 
 services:
   frontend:
+    container_name: piie-ads-ui
     build:
       context: .
       dockerfile: Dockerfile
