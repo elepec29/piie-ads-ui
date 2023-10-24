@@ -45,6 +45,7 @@ export const LoginComponent: React.FC<{}> = ({}) => {
     handleSubmit,
     watch,
     setValue,
+    setFocus,
     formState: { errors },
   } = useForm<FormularioLogin>({
     mode: 'onBlur',
@@ -193,6 +194,8 @@ export const LoginComponent: React.FC<{}> = ({}) => {
         }}
         onClaveCambiada={() => {
           setShowModalCambiarClave(false);
+          setValue('clave', '', { shouldValidate: false });
+          setFocus('clave');
         }}
       />
 
