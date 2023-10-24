@@ -21,8 +21,14 @@ interface InputRutProps extends Omit<BaseProps, 'label'> {
   omitirSignoObligatorio?: boolean;
 
   opcional?: boolean;
+
+  children?: React.ReactNode;
 }
 
+/**
+ * Se pueden usar los children pasa setar un label mas complejo. Los children tienen preferencia
+ * sobre el label pasado como prop.
+ */
 export const InputRut: React.FC<InputRutProps> = ({
   name,
   className,
@@ -32,6 +38,7 @@ export const InputRut: React.FC<InputRutProps> = ({
   deshabilitado,
   opcional,
   omitirSignoObligatorio,
+  children,
 }) => {
   const idInput = useRandomId('rut');
 
@@ -55,7 +62,7 @@ export const InputRut: React.FC<InputRutProps> = ({
     <>
       <Form.Group className={`${className ?? ''} position-relative`} controlId={idInput}>
         <IfContainer show={!omitirLabel}>
-          <Form.Label>{determinarLabel()}</Form.Label>
+          <Form.Label>{children ?? determinarLabel()}</Form.Label>
         </IfContainer>
 
         <Form.Control

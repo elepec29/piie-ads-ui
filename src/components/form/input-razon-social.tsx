@@ -6,7 +6,7 @@ import { BaseProps } from './base-props';
 
 interface InputRazonSocialProps extends BaseProps {}
 
-const InputRazonSocial: React.FC<InputRazonSocialProps> = ({
+export const InputRazonSocial: React.FC<InputRazonSocialProps> = ({
   name,
   label,
   className,
@@ -59,5 +59,3 @@ const InputRazonSocial: React.FC<InputRazonSocialProps> = ({
     </>
   );
 };
-
-export default InputRazonSocial;

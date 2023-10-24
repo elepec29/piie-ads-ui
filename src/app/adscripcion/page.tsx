@@ -1,5 +1,17 @@
 'use client';
 
+import {
+  ComboComuna,
+  ComboSimple,
+  InputBlockDepartamento,
+  InputCalle,
+  InputEmail,
+  InputNumero,
+  InputRazonSocial,
+  InputRut,
+  InputTelefono,
+} from '@/components/form';
+import SpinnerPantallaCompleta from '@/components/spinner-pantalla-completa';
 import { Stepper } from '@/components/stepper/stepper';
 import Titulo from '@/components/titulo';
 import { InscribeContext } from '@/contexts';
@@ -8,11 +20,7 @@ import { Empleador } from '@/interface/adscripcion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useContext, useEffect, useState } from 'react';
-import { OverlayTrigger, Tooltip } from 'react-bootstrap';
-import { SubmitHandler, useForm } from 'react-hook-form';
-import { ClipLoader } from 'react-spinners';
-import { formatRut, validateRut } from 'rutlib';
-import isEmail from 'validator/es/lib/isEmail';
+import { FormProvider, SubmitHandler, useForm } from 'react-hook-form';
 import { CamposAdscripcionPaso1 } from './(modelos)/campos-adscripcion-paso-1';
 import { buscarActividadesLaborales } from './(servicios)/buscar-actividades-laborales';
 import { buscarCajasDeCompensacion } from './(servicios)/buscar-cajas-de-compensacion';
@@ -76,22 +84,15 @@ const AdscripcionPage: React.FC<{}> = ({}) => {
 
   const { datosAdmin } = useContext(InscribeContext);
 
-  const {
-    register,
-    handleSubmit,
-    getValues,
-    setValue,
-    watch,
-    formState: { errors },
-  } = useForm<CamposAdscripcionPaso1>({
+  const formulario = useForm<CamposAdscripcionPaso1>({
     defaultValues: valoresPorDefecto,
     mode: 'onBlur',
   });
 
-  const regionSeleccionada = watch('regionId');
+  const regionSeleccionada = formulario.watch('regionId');
 
+  // Parchar formulario con datos del local storage
   useEffect(() => {
-    // Parchar formulario
     if (loading) {
       return;
     }
@@ -104,20 +105,20 @@ const AdscripcionPage: React.FC<{}> = ({}) => {
 
     setMostrarSpinner(true);
     for (const key of Object.keys(campos) as [keyof CamposAdscripcionPaso1]) {
-      setValue(key, campos[key]);
+      formulario.setValue(key, campos[key]);
     }
 
     /* NOTA: Hay que darle un timeout antes de parchar la comuna. Puede ser porque react necesita
      * un tiempo para actualizar el combo de comunas al parchar la region. */
     setTimeout(() => {
-      setValue('comunaId', campos.comunaId);
+      formulario.setValue('comunaId', campos.comunaId);
       setMostrarSpinner(false);
     }, 1000);
   }, [loading]);
 
+  // Guardar cambios al formulario
   useEffect(() => {
-    // Guardar cambios al formulario
-    const subscripcion = watch(
+    const subscripcion = formulario.watch(
       (campos) => respaldarPaso1(campos as CamposAdscripcionPaso1),
       valoresPorDefecto,
     );
@@ -180,571 +181,170 @@ const AdscripcionPage: React.FC<{}> = ({}) => {
     router.push('/adscripcion/pasodos');
   };
 
-  const validarComboObligatorio = (mensaje?: string) => {
-    return (valor: number | string) => {
-      if (typeof valor === 'number' && valor === -1) {
-        return mensaje ?? 'Este campo es obligatorio';
-      }
-
-      if (typeof valor === 'string' && valor === '') {
-        return mensaje ?? 'Este campo es obligatorio';
-      }
-    };
-  };
-
-  const onChangeRunEntidadEmpleadora = (event: any) => {
-    const regex = /[^0-9kK\-\.]/g; // solo números, puntos, guiones y la letra K
-    const run = event.target.value as string;
-
-    if (regex.test(run)) {
-      const soloCaracteresValidos = run.replaceAll(regex, '');
-      setValue('run', soloCaracteresValidos);
-    }
-  };
-
-  const trimInput = (campo: keyof CamposAdscripcionPaso1) => {
-    const value = getValues(campo);
-
-    if (typeof value === 'string') {
-      setValue(campo, value.trim(), { shouldValidate: true });
-    }
-  };
-
   return (
     <>
-      <div
-        className={'spinner'}
-        style={{
-          display: loading || mostrarSpinner ? '' : 'none',
-        }}>
-        <ClipLoader
-          color={'var(--color-blue)'}
-          loading={true}
-          size={150}
-          aria-label="Loading Spinner"
-          data-testid="loader"
-        />
-      </div>
+      <SpinnerPantallaCompleta show={loading || mostrarSpinner} />
 
-      <form
-        className={
-          'pb-3 px-3 pb-md-4 px-md-4 px-lg-5 bgads needs-validation animate__animated animate__fadeIn' +
-          (loading ? ' blur' : '')
-        }
-        onSubmit={handleSubmit(onSiguiente)}>
-        <div>
-          <Titulo manual="Manual" url="#">
-            Inscribe Entidad Empleadora / Datos Entidad Empleadora
-          </Titulo>
-        </div>
+      <FormProvider {...formulario}>
+        <form
+          className={
+            'pb-3 px-3 pb-md-4 px-md-4 px-lg-5 bgads needs-validation animate__animated animate__fadeIn' +
+            (loading ? ' blur' : '')
+          }
+          onSubmit={formulario.handleSubmit(onSiguiente)}>
+          <div>
+            <Titulo manual="Manual" url="#">
+              Inscribe Entidad Empleadora / Datos Entidad Empleadora
+            </Titulo>
+          </div>
 
-        <div className="mt-3 mb-4 mx-0 mx-md-5">
-          <Stepper Options={step} />
-        </div>
+          <div className="mt-3 mb-4 mx-0 mx-md-5">
+            <Stepper Options={step} />
+          </div>
 
-        <div className="row my-3">
-          <div className="col-12 d-flex justify-content-end">
-            <div style={{ color: 'blueviolet' }}>
-              <span>
-                <small>(*) Son campos obligatorios.</small>
-              </span>
+          <div className="row my-3">
+            <div className="col-12 d-flex justify-content-end">
+              <div style={{ color: 'blueviolet' }}>
+                <span>
+                  <small>(*) Son campos obligatorios.</small>
+                </span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="row mt-3 g-3 align-items-baseline">
-          <div className="col-12 col-md-6 col-lg-4 col-xl-3 position-relative">
-            <label htmlFor="runEntidadEmpleadora" className="form-label">
-              <span>RUN Entidad Empleadora /</span>
+          <div className="row mt-3 g-3 align-items-baseline">
+            <InputRut name="run" tipo="run" className="col-12 col-md-6 col-lg-4 col-xl-3">
+              RUN Entidad Empleadora /
               <br />
-              <span>Persona Trabajadora Independiente (*)</span>
-            </label>
-            <input
-              id="runEntidadEmpleadora"
-              type="text"
-              autoComplete="new-custom-value"
-              className={`form-control ${errors.run ? 'is-invalid' : ''}`}
-              {...register('run', {
-                required: {
-                  value: true,
-                  message: 'Este campo es obligatorio',
-                },
-                validate: {
-                  esRut: (run) => (validateRut(run) ? undefined : 'Debe ingresar un RUN válido'),
-                },
-                onChange: onChangeRunEntidadEmpleadora,
-                onBlur: (event) => {
-                  const run = event.target.value;
-                  if (validateRut(run)) {
-                    setValue('run', formatRut(run, false));
-                  }
-                },
-              })}
+              Persona Trabajadora Independiente
+            </InputRut>
+
+            <InputRazonSocial
+              name="razonSocial"
+              label="Razón Social / Nombre"
+              className="col-12 col-md-6 col-lg-4 col-xl-3"
             />
-            {errors.run && <div className="invalid-tooltip">{errors.run?.message}</div>}
-          </div>
 
-          <div className="col-12 col-md-6 col-lg-4 col-xl-3 position-relative">
-            <label htmlFor="razonSocial" className="form-label">
-              Razón Social / Nombre (*)
-            </label>
-            <input
-              id="razonSocial"
-              type="text"
-              autoComplete="new-custom-value"
-              className={`form-control ${errors.razonSocial ? 'is-invalid' : ''}`}
-              {...register('razonSocial', {
-                required: {
-                  value: true,
-                  message: 'Este campo es obligatorio',
-                },
-                minLength: {
-                  value: 4,
-                  message: 'Debe tener al menos 4 caracteres',
-                },
-                maxLength: {
-                  value: 120,
-                  message: 'No puede tener más de 120 caracteres',
-                },
-                onBlur: () => trimInput('razonSocial'),
-              })}
+            <ComboSimple
+              name="tipoEntidadId"
+              datos={tiposDeEmpleadores}
+              idElemento={'idtipoempleador'}
+              descripcion={'tipoempleador'}
+              label="Tipo de Entidad Empleadora"
+              className="col-12 col-md-6 col-lg-4 col-xl-3"
             />
-            {errors.razonSocial && (
-              <div className="invalid-tooltip">{errors.razonSocial?.message}</div>
-            )}
-          </div>
 
-          <div className="col-12 col-md-6 col-lg-4 col-xl-3 position-relative">
-            <label htmlFor="tipoEntidadEmpleadora" className="form-label">
-              Tipo de Entidad Empleadora (*)
-            </label>
-            <select
-              id="tipoEntidadEmpleadora"
-              className={`form-select ${errors.tipoEntidadId ? 'is-invalid' : ''}`}
-              {...register('tipoEntidadId', {
-                setValueAs: (v) => parseInt(v, 10),
-                validate: validarComboObligatorio(),
-              })}>
-              <option value={-1}>Seleccionar</option>
-              {tiposDeEmpleadores &&
-                tiposDeEmpleadores.map(({ idtipoempleador, tipoempleador }) => (
-                  <option key={idtipoempleador} value={idtipoempleador}>
-                    {tipoempleador}
-                  </option>
-                ))}
-            </select>
-            {errors.tipoEntidadId && (
-              <div className="invalid-tooltip">{errors.tipoEntidadId?.message}</div>
-            )}
-          </div>
-
-          <div className="col-12 col-md-6 col-lg-4 col-xl-3 position-relative">
-            <label htmlFor="cajaCompensacion" className="form-label">
-              Seleccione CCAF a la cual está afiliada (*)
-            </label>
-            <select
-              id="cajaCompensacion"
-              className={`form-select ${errors.cajaCompensacionId ? 'is-invalid' : ''}`}
-              {...register('cajaCompensacionId', {
-                setValueAs: (v) => parseInt(v, 10),
-                validate: validarComboObligatorio(),
-              })}>
-              <option value={-1}>Seleccionar</option>
-              {cajasDeCompensacion &&
-                cajasDeCompensacion.map((value) => (
-                  <option key={value.idccaf} value={value.idccaf}>
-                    {value.nombre}
-                  </option>
-                ))}
-            </select>
-            {errors.cajaCompensacionId && (
-              <div className="invalid-tooltip">{errors.cajaCompensacionId?.message}</div>
-            )}
-          </div>
-
-          <div className="col-12 col-md-6 col-lg-4 col-xl-3 position-relative">
-            <label htmlFor="actividadLaboral" className="form-label">
-              Actividad Laboral Entidad Empleadora (*)
-            </label>
-            <select
-              id="actividadLaboral"
-              className={`form-select ${errors.actividadLaboralId ? 'is-invalid' : ''}`}
-              {...register('actividadLaboralId', {
-                setValueAs: (v) => parseInt(v, 10),
-                validate: validarComboObligatorio(),
-              })}>
-              <option value={-1}>Seleccionar</option>
-              {actividadesLaborales &&
-                actividadesLaborales.map((value) => (
-                  <option key={value.idactividadlaboral} value={value.idactividadlaboral}>
-                    {value.actividadlaboral}
-                  </option>
-                ))}
-            </select>
-            {errors.actividadLaboralId && (
-              <div className="invalid-tooltip">{errors.actividadLaboralId?.message}</div>
-            )}
-          </div>
-
-          <div className="col-12 col-md-6 col-lg-4 col-xl-3 position-relative">
-            <label htmlFor="region" className="form-label">
-              Región (*)
-            </label>
-            <select
-              id="region"
-              className={`form-select ${errors.regionId ? 'is-invalid' : ''}`}
-              {...register('regionId', {
-                validate: validarComboObligatorio(),
-                onChange: () => setValue('comunaId', ''),
-              })}>
-              <option value={''}>Seleccionar</option>
-              {regiones &&
-                regiones.map(({ idregion, nombre }) => (
-                  <option key={idregion} value={idregion}>
-                    {nombre}
-                  </option>
-                ))}
-            </select>
-            {errors.regionId && <div className="invalid-tooltip">{errors.regionId?.message}</div>}
-          </div>
-
-          <div className="col-12 col-md-6 col-lg-4 col-xl-3 position-relative">
-            <label htmlFor="comuna" className="form-label">
-              Comuna (*)
-            </label>
-            <select
-              id="comuna"
-              className={`form-select ${errors.comunaId ? 'is-invalid' : ''}`}
-              {...register('comunaId', {
-                validate: validarComboObligatorio(),
-              })}>
-              <option value={''}>Seleccionar</option>
-              {comunas &&
-                comunas
-                  .filter(({ region: { idregion } }) => idregion == regionSeleccionada)
-                  .map((value) => (
-                    <option key={value.idcomuna} value={value.idcomuna}>
-                      {value.nombre}
-                    </option>
-                  ))}
-            </select>
-            {errors.comunaId && <div className="invalid-tooltip">{errors.comunaId?.message}</div>}
-          </div>
-
-          <div className="col-12 col-md-6 col-lg-4 col-xl-3 position-relative">
-            <label htmlFor="calle" className="form-label">
-              Calle (*)
-            </label>
-            <input
-              id="calle"
-              type="text"
-              autoComplete="new-custom-value"
-              className={`form-control ${errors.calle ? 'is-invalid' : ''}`}
-              {...register('calle', {
-                required: {
-                  value: true,
-                  message: 'Este campo es obligatorio',
-                },
-                minLength: {
-                  value: 2,
-                  message: 'Debe tener al menos 2 caracteres',
-                },
-                maxLength: {
-                  value: 80,
-                  message: 'No puede tener más de 80 caracteres',
-                },
-                onBlur: () => trimInput('calle'),
-              })}
+            <ComboSimple
+              name="cajaCompensacionId"
+              label="Seleccione CCAF a la cual está afiliada"
+              datos={cajasDeCompensacion}
+              descripcion={'nombre'}
+              idElemento={'idccaf'}
+              className="col-12 col-md-6 col-lg-4 col-xl-3"
             />
-            {errors.calle && <div className="invalid-tooltip">{errors.calle?.message}</div>}
-          </div>
 
-          <div className="col-12 col-md-6 col-lg-4 col-xl-3 position-relative">
-            <label htmlFor="numero" className="form-label">
-              <span>Número (*)</span>
-              <OverlayTrigger
-                placement="top"
-                delay={{ show: 250, hide: 400 }}
-                overlay={(props) => (
-                  <Tooltip id="button-tooltip" {...props}>
-                    {'Ingresar "S/N" si no tiene número'}
-                  </Tooltip>
-                )}>
-                <i className="ms-2 text-primary bi bi-info-circle" style={{ fontSize: '16px' }}></i>
-              </OverlayTrigger>
-            </label>
-            <input
-              id="numero"
-              type="text"
-              className={`form-control ${errors.numero ? 'is-invalid' : ''}`}
-              {...register('numero', {
-                required: {
-                  value: true,
-                  message: 'Este campo es obligatorio',
-                },
-                pattern: {
-                  value: /^(\d{1,20}|[Ss]\/[Nn])$/g,
-                  message: 'Debe contener solo dígitos o S/N',
-                },
-                maxLength: {
-                  value: 20,
-                  message: 'No puede tener más de 20 dígitos',
-                },
-                onChange: (event: any) => {
-                  const regex = /[^0-9SsnN\/]/g;
-                  const valor = event.target.value as string;
-
-                  if (regex.test(valor)) {
-                    const valorSoloDigitos = valor.replaceAll(regex, '');
-                    setValue('numero', valorSoloDigitos);
-                  }
-                },
-                onBlur: (event: any) => {
-                  setValue('numero', (event.target.value as string).toUpperCase());
-                },
-              })}
+            <ComboSimple
+              name="actividadLaboralId"
+              label="Actividad Laboral Entidad Empleadora"
+              datos={actividadesLaborales}
+              descripcion={'actividadlaboral'}
+              idElemento={'idactividadlaboral'}
+              className="col-12 col-md-6 col-lg-4 col-xl-3"
             />
-            {errors.numero && <div className="invalid-tooltip">{errors.numero?.message}</div>}
-          </div>
 
-          <div className="col-12 col-md-6 col-lg-4 col-xl-3 position-relative">
-            <label htmlFor="blockDepartamento" className="form-label">
-              Block / Departamento
-            </label>
-            <input
-              id="blockDepartamento"
-              type="text"
-              autoComplete="new-custom-value"
-              className={`form-control ${errors.block ? 'is-invalid' : ''}`}
-              {...register('block', {
-                maxLength: {
-                  value: 20,
-                  message: 'No puede tener más de 20 carcateres',
-                },
-                pattern: {
-                  value: /^[a-zA-Z0-9#\s]+$/g,
-                  message: 'Solo debe tener números, letras o #',
-                },
-                onBlur: () => trimInput('block'),
-              })}
+            <ComboSimple
+              name="regionId"
+              label="Región"
+              datos={regiones}
+              idElemento={'idregion'}
+              descripcion={'nombre'}
+              tipoValor="string"
+              className="col-12 col-md-6 col-lg-4 col-xl-3"
             />
-            {errors.block && <div className="invalid-tooltip">{errors.block?.message}</div>}
+
+            <ComboComuna
+              name="comunaId"
+              label="Comuna"
+              comunas={comunas}
+              regionSeleccionada={regionSeleccionada}
+              className="col-12 col-md-6 col-lg-4 col-xl-3"
+            />
+
+            <InputCalle name="calle" label="Calle" className="col-12 col-md-6 col-lg-4 col-xl-3" />
+
+            <InputNumero
+              name="numero"
+              label="Número"
+              className="col-12 col-md-6 col-lg-4 col-xl-3"
+            />
+
+            <InputBlockDepartamento
+              name="block"
+              label="Block / Departamento"
+              className="col-12 col-md-6 col-lg-4 col-xl-3"
+            />
+
+            <InputTelefono
+              label="Teléfono"
+              name="telefono1"
+              className="col-12 col-md-6 col-lg-4 col-xl-3"
+            />
+
+            <InputTelefono
+              opcional
+              name="telefono2"
+              label="Teléfono 2"
+              className="col-12 col-md-6 col-lg-4 col-xl-3"
+            />
+
+            <InputEmail
+              name="email"
+              label="Correo electrónico entidad empleadora"
+              debeCoincidirCon="emailConfirma"
+              className="col-12 col-md-6 col-lg-4 col-xl-3"
+            />
+
+            <InputEmail
+              label="Repetir correo electrónico entidad empleadora"
+              name="emailConfirma"
+              debeCoincidirCon="email"
+              className="col-12 col-md-6 col-lg-4 col-xl-3"
+            />
+
+            {/* NOTA: Columna "fantasma" para mover la parte del numero de personas a una nueva linea */}
+            <div className="d-none d-lg-block col-lg-4 d-xl-none"></div>
+
+            <ComboSimple
+              name="tamanoEmpresaId"
+              label="Tamaño Entidad Empleadora"
+              datos={tamanosDeEmpresas}
+              descripcion={'descripcion'}
+              idElemento={'idtamanoempresa'}
+              className="col-12 col-md-6 col-lg-4 col-xl-3"
+            />
+
+            <ComboSimple
+              name="sistemaRemuneracionId"
+              label="Sistema de Remuneración"
+              datos={sistemasDeRemuneracion}
+              descripcion={'descripcion'}
+              idElemento={'idsistemaremuneracion'}
+              className="col-12 col-md-6 col-lg-4 col-xl-3"
+            />
           </div>
 
-          <div className="col-12 col-md-6 col-lg-4 col-xl-3 position-relative">
-            <label className="form-label" htmlFor="telefono1">
-              Teléfono 1 (*)
-            </label>
-            <div className="input-group mb-2">
-              <div className="input-group-prepend">
-                <div className="input-group-text">+56</div>
-              </div>
-              <input
-                id="telefono1"
-                type="text"
-                autoComplete="new-custom-value"
-                className={`form-control ${errors.telefono1 ? 'is-invalid' : ''}`}
-                {...register('telefono1', {
-                  required: {
-                    value: true,
-                    message: 'Este campo es obligatorio',
-                  },
-                  pattern: {
-                    value: /^[0-9]{9}$/, // Exactamente 9 digitos
-                    message: 'Debe tener 9 dígitos',
-                  },
-                  onChange: (event: any) => {
-                    const regex = /[^0-9]/g; // Hace match con cualquier caracter que no sea un numero
-                    let valorFinal = event.target.value as string;
-
-                    if (regex.test(valorFinal)) {
-                      valorFinal = valorFinal.replaceAll(regex, '');
-                    }
-
-                    if (valorFinal.length > 9) {
-                      valorFinal = valorFinal.substring(0, 9);
-                    }
-
-                    setValue('telefono1', valorFinal);
-                  },
-                })}
-              />
-              {errors.telefono1 && (
-                <div className="invalid-tooltip">{errors.telefono1?.message}</div>
-              )}
+          <div className="row mt-5">
+            <div className="d-flex flex-column flex-sm-row flex-sm-row-reverse">
+              <button type="submit" className="btn btn-primary">
+                Siguiente
+              </button>
+              <Link href="/" className="btn btn-danger mt-2 mt-sm-0 me-0 me-sm-2">
+                Volver
+              </Link>
             </div>
           </div>
-
-          <div className="col-12 col-md-6 col-lg-4 col-xl-3 position-relative">
-            <label className="form-label" htmlFor="telefono2">
-              Teléfono 2
-            </label>
-            <div className="input-group mb-2">
-              <div className="input-group-prepend">
-                <div className="input-group-text">+56</div>
-              </div>
-              <input
-                id="telefono2"
-                type="text"
-                autoComplete="new-custom-value"
-                className={`form-control ${errors.telefono2 ? 'is-invalid' : ''}`}
-                {...register('telefono2', {
-                  pattern: {
-                    value: /^[0-9]{9}$/, // Exactamente 9 digitos
-                    message: 'Debe tener 9 dígitos',
-                  },
-                  onChange: (event: any) => {
-                    const regex = /[^0-9]/g; // Hace match con cualquier caracter que no sea un numero
-                    let valorFinal = event.target.value as string;
-
-                    if (regex.test(valorFinal)) {
-                      valorFinal = valorFinal.replaceAll(regex, '');
-                    }
-
-                    if (valorFinal.length > 9) {
-                      valorFinal = valorFinal.substring(0, 9);
-                    }
-
-                    setValue('telefono2', valorFinal);
-                  },
-                })}
-              />
-              {errors.telefono2 && (
-                <div className="invalid-tooltip">{errors.telefono2?.message}</div>
-              )}
-            </div>
-          </div>
-
-          <div className="col-12 col-md-6 col-lg-4 col-xl-3">
-            <div className="position-relative">
-              <label htmlFor="email" className="form-label">
-                Correo electrónico entidad empleadora (*)
-              </label>
-              <input
-                id="email"
-                type="mail"
-                placeholder="ejemplo@ejemplo.cl"
-                autoComplete="new-custom-value"
-                onPaste={(e) => e.preventDefault()}
-                onCopy={(e) => e.preventDefault()}
-                className={`form-control ${errors.email ? 'is-invalid' : ''}`}
-                {...register('email', {
-                  required: {
-                    value: true,
-                    message: 'Este campo es obligatorio',
-                  },
-                  maxLength: {
-                    value: 250,
-                    message: 'No puede tener más de 250 caracteres',
-                  },
-                  validate: {
-                    esEmail: (email) => (isEmail(email) ? undefined : 'Correo inválido'),
-                  },
-                })}
-              />
-              {errors.email && <div className="invalid-tooltip">{errors.email?.message}</div>}
-            </div>
-          </div>
-
-          <div className="col-12 col-md-6 col-lg-4 col-xl-3 position-relative">
-            <label htmlFor="emailConfirma" className="form-label">
-              Repetir correo electrónico entidad empleadora (*)
-            </label>
-            <input
-              id="emailConfirma"
-              type="mail"
-              placeholder="ejemplo@ejemplo.cl"
-              autoComplete="new-custom-value"
-              onPaste={(e) => e.preventDefault()}
-              onCopy={(e) => e.preventDefault()}
-              className={`form-control ${errors.emailConfirma ? 'is-invalid' : ''}`}
-              {...register('emailConfirma', {
-                required: {
-                  value: true,
-                  message: 'Este campo es obligatorio',
-                },
-                maxLength: {
-                  value: 250,
-                  message: 'No puede tener más de 250 caracteres',
-                },
-                validate: {
-                  esEmail: (email) => (isEmail(email) ? undefined : 'Correo inválido'),
-                  emailCoinciden: (emailConfirmar) => {
-                    if (getValues('email') !== emailConfirmar) {
-                      return 'Correos no coinciden';
-                    }
-                  },
-                },
-              })}
-            />
-            {errors.emailConfirma && (
-              <div className="invalid-tooltip">{errors.emailConfirma?.message}</div>
-            )}
-          </div>
-
-          {/* NOTA: Columna "fantasma" para mover la parte del numero de personas a una nueva linea */}
-          <div className="d-none d-lg-block col-lg-4 d-xl-none"></div>
-
-          <div className="col-12 col-md-6 col-lg-4 col-xl-3 position-relative">
-            <label htmlFor="tamanoEmpresa" className="form-label">
-              N° de personas trabajadoras (*)
-            </label>
-            <select
-              id="tamanoEmpresa"
-              className={`form-select ${errors.tamanoEmpresaId ? 'is-invalid' : ''}`}
-              {...register('tamanoEmpresaId', {
-                setValueAs: (v) => parseInt(v, 10),
-                validate: validarComboObligatorio(),
-              })}>
-              <option value={-1}>Seleccionar</option>
-              {tamanosDeEmpresas &&
-                tamanosDeEmpresas.map(({ idtamanoempresa, descripcion }) => (
-                  <option key={idtamanoempresa} value={idtamanoempresa}>
-                    {descripcion}
-                  </option>
-                ))}
-            </select>
-            {errors.tamanoEmpresaId && (
-              <div className="invalid-tooltip">{errors.tamanoEmpresaId?.message}</div>
-            )}
-          </div>
-
-          <div className="col-12 col-md-6 col-lg-4 col-xl-3 position-relative">
-            <label htmlFor="sistemaRemuneracion" className="form-label">
-              Sistema de Remuneración
-            </label>
-            <select
-              id="sistemaRemuneracion"
-              className={`form-select ${errors.sistemaRemuneracionId ? 'is-invalid' : ''}`}
-              {...register('sistemaRemuneracionId', {
-                setValueAs: (v) => parseInt(v, 10),
-                validate: validarComboObligatorio(),
-              })}>
-              <option value={-1}>Seleccionar</option>
-              {sistemasDeRemuneracion &&
-                sistemasDeRemuneracion.map(({ idsistemaremuneracion, descripcion }) => (
-                  <option key={idsistemaremuneracion} value={idsistemaremuneracion}>
-                    {descripcion}
-                  </option>
-                ))}
-            </select>
-            {errors.sistemaRemuneracionId && (
-              <div className="invalid-tooltip">{errors.sistemaRemuneracionId?.message}</div>
-            )}
-          </div>
-        </div>
-
-        <div className="row mt-5">
-          <div className="d-flex flex-column flex-sm-row flex-sm-row-reverse">
-            <button type="submit" className="btn btn-primary">
-              Siguiente
-            </button>
-            <Link href="/" className="btn btn-danger mt-2 mt-sm-0 me-0 me-sm-2">
-              Volver
-            </Link>
-          </div>
-        </div>
-      </form>
+        </form>
+      </FormProvider>
     </>
   );
 };
