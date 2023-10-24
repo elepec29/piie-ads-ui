@@ -13,7 +13,6 @@ import { AlertaError, AlertaExito } from '@/utilidades';
 import { useRouter } from 'next/navigation';
 import { useContext, useState } from 'react';
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form';
-import IfContainer from '../if-container';
 import SpinnerPantallaCompleta from '../spinner-pantalla-completa';
 import styles from './login.module.css';
 import ModalCambiarClaveTemporal from './modal-cambiar-clave-temporal';
@@ -78,9 +77,7 @@ export const LoginComponent: React.FC<{}> = ({}) => {
 
   return (
     <>
-      <IfContainer show={showSpinner}>
-        <SpinnerPantallaCompleta />
-      </IfContainer>
+      <SpinnerPantallaCompleta show={showSpinner} />
 
       <FormProvider {...formulario}>
         <form onSubmit={formulario.handleSubmit(handleLoginUsuario)} className={styles.formlogin}>

@@ -1,9 +1,15 @@
 import React from 'react';
 import { ClipLoader } from 'react-spinners';
 
-interface SpinnerPantallaCompletaProps {}
+interface SpinnerPantallaCompletaProps {
+  show?: boolean;
+}
 
-const SpinnerPantallaCompleta: React.FC<SpinnerPantallaCompletaProps> = ({}) => {
+const SpinnerPantallaCompleta: React.FC<SpinnerPantallaCompletaProps> = ({ show }) => {
+  if (!show) {
+    return null;
+  }
+
   return (
     <>
       <div
