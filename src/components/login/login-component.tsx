@@ -1,4 +1,5 @@
 'use client';
+
 import { AuthContext } from '@/contexts/auth-context';
 import {
   AutenticacionTransitoriaError,
@@ -6,13 +7,14 @@ import {
   RutInvalidoError,
   UsuarioNoExisteError,
 } from '@/servicios/auth';
-import { urlRedirigirEnLogin } from '@/servicios/environment';
+import { urlTramitacion } from '@/servicios/environment';
+import { AlertaError, AlertaExito } from '@/utilidades';
 import { useRouter } from 'next/navigation';
 import { useContext, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { formatRut, validateRut } from 'rutlib';
-import Swal from 'sweetalert2';
 import IfContainer from '../if-container';
+import SpinnerPantallaCompleta from '../spinner-pantalla-completa';
 import styles from './login.module.css';
 import ModalCambiarClaveTemporal from './modal-cambiar-clave-temporal';
 import ModalClaveEnviada from './modal-clave-enviada';
@@ -26,8 +28,12 @@ interface FormularioLogin {
 export const LoginComponent: React.FC<{}> = ({}) => {
   const [verClave, setVerClave] = useState(false);
 
+  const [showSpinner, setShowSpinner] = useState(false);
+
   const [showModalCambiarClave, setShowModalCambiarClave] = useState(false);
+
   const [showModalRecuperarClave, setShowModalRecuperarClave] = useState(false);
+
   const [showModalClaveEnviada, setShowModalClaveEnviada] = useState(false);
 
   const router = useRouter();
@@ -48,16 +54,13 @@ export const LoginComponent: React.FC<{}> = ({}) => {
 
   const handleLoginUsuario: SubmitHandler<FormularioLogin> = async ({ rut, clave }) => {
     try {
-      const usuario = await login(rut, clave);
+      setShowSpinner(true);
 
-      await Swal.fire({
-        html: 'Sesión iniciada correctamente',
-        icon: 'success',
-        timer: 2000,
-        showConfirmButton: false,
-      });
+      await login(rut, clave);
 
-      router.push(urlRedirigirEnLogin(usuario));
+      AlertaExito.fire({ text: 'Sesión iniciada correctamente' });
+
+      router.push(`${urlTramitacion()}/tramitacion`);
     } catch (error) {
       let messageError = '';
 
@@ -75,17 +78,23 @@ export const LoginComponent: React.FC<{}> = ({}) => {
       }
 
       if (messageError != '')
-        Swal.fire({
+        AlertaError.fire({
           title: 'Error',
           icon: 'error',
           html: messageError,
           confirmButtonColor: 'var(--color-blue)',
         });
+    } finally {
+      setShowSpinner(false);
     }
   };
 
   return (
     <>
+      <IfContainer show={showSpinner}>
+        <SpinnerPantallaCompleta />
+      </IfContainer>
+
       <form onSubmit={handleSubmit(handleLoginUsuario)} className={styles.formlogin}>
         <label style={{ fontWeight: 'bold' }}>
           Ingresa tus credenciales de acceso al Portal Integrado para Entidades Empleadoras
