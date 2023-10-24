@@ -2,6 +2,8 @@ import React from 'react';
 import { Modal } from 'react-bootstrap';
 
 interface ModalTerminosAndCondicionesProps {
+  show: boolean;
+
   /** Modal se cierra desde la `X` en el titulo, se presiona el backdrop o se prsiona `ESC` */
   onCerrar: () => void;
 
@@ -13,6 +15,7 @@ interface ModalTerminosAndCondicionesProps {
 }
 
 const ModalTerminosAndCondiciones: React.FC<ModalTerminosAndCondicionesProps> = ({
+  show,
   onCerrar,
   onTerminosAceptados,
   onRechazarTerminos,
@@ -20,7 +23,7 @@ const ModalTerminosAndCondiciones: React.FC<ModalTerminosAndCondicionesProps> = 
   return (
     <>
       <Modal
-        show={true}
+        show={show}
         size="xl"
         scrollable
         centered

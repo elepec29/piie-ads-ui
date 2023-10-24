@@ -11,6 +11,7 @@ export * from './input-fecha';
 export * from './input-mes-ano';
 export * from './input-nombres';
 export * from './input-numero';
+export * from './input-numero-de-serie';
 export * from './input-radio-buttons';
 export * from './input-razon-social';
 export * from './input-rut';
