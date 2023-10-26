@@ -1,7 +1,7 @@
 'use client';
 
 import { InputClave, InputRut } from '@/components/form';
-import { AuthContext } from '@/contexts/auth-context';
+import { useAuthContext } from '@/contexts/auth-context';
 import {
   AutenticacionTransitoriaError,
   LoginPasswordInvalidoError,
@@ -11,7 +11,7 @@ import {
 import { urlTramitacion } from '@/servicios/environment';
 import { AlertaError, AlertaExito } from '@/utilidades';
 import { useRouter } from 'next/navigation';
-import { useContext, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form';
 import SpinnerPantallaCompleta from '../spinner-pantalla-completa';
 import styles from './login.module.css';
@@ -32,11 +32,20 @@ export const LoginComponent: React.FC<{}> = ({}) => {
 
   const router = useRouter();
 
-  const { login } = useContext(AuthContext);
+  const { usuario, login } = useAuthContext();
 
   const formulario = useForm<FormularioLogin>({ mode: 'onBlur' });
 
   const rutUsuario = formulario.watch('rut');
+
+  // Redirigir al usuario si esta logueado
+  useEffect(() => {
+    if (!usuario) {
+      return;
+    }
+
+    router.push(`${urlTramitacion()}/tramitacion`);
+  }, [usuario]);
 
   const handleLoginUsuario: SubmitHandler<FormularioLogin> = async ({ rut, clave }) => {
     try {
@@ -45,8 +54,6 @@ export const LoginComponent: React.FC<{}> = ({}) => {
       await login(rut, clave);
 
       AlertaExito.fire({ text: 'Sesión iniciada correctamente' });
-
-      router.push(`${urlTramitacion()}/tramitacion`);
     } catch (error) {
       let messageError = '';
 
