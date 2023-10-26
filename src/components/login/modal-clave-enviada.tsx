@@ -15,7 +15,7 @@ const ModalClaveEnviada: React.FC<ModalClaveEnviadaProps> = ({ show, onCerrarMod
     <>
       <Modal show={show} onHide={handleCerrarModal} backdrop="static" keyboard={false}>
         <Modal.Header closeButton>
-          <Modal.Title>Recuperar Clave de acceso</Modal.Title>
+          <Modal.Title className="fs-5">Recuperar Clave de acceso</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <div className="row text-center" style={{ textAlign: 'justify' }}>

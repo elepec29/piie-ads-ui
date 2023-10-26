@@ -1,19 +1,24 @@
 'use client';
 
+import {
+  InputApellidos,
+  InputEmail,
+  InputNombres,
+  InputNumeroDeSerie,
+  InputRut,
+} from '@/components/form';
+import IfContainer from '@/components/if-container';
+import SpinnerPantallaCompleta from '@/components/spinner-pantalla-completa';
 import { Stepper } from '@/components/stepper/stepper';
 import Titulo from '@/components/titulo';
 import { InscribeContext } from '@/contexts/inscribir-context';
 import StepContext from '@/contexts/step-context';
 import { Administrador } from '@/interface/adscripcion';
+import { AlertaError, AlertaExito } from '@/utilidades';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ChangeEvent, useContext, useEffect, useRef, useState } from 'react';
-import { Overlay } from 'react-bootstrap';
-import { SubmitHandler, useForm } from 'react-hook-form';
-import { ClipLoader } from 'react-spinners';
-import { formatRut, validateRut } from 'rutlib';
-import Swal from 'sweetalert2';
-import isEmail from 'validator/lib/isEmail';
+import { useContext, useEffect, useState } from 'react';
+import { FormProvider, SubmitHandler, useForm } from 'react-hook-form';
 import { CamposAdscripcionPaso2 } from '../(modelos)/campos-adscripcion-paso-2';
 import {
   borrarRespaldos,
@@ -21,24 +26,20 @@ import {
   buscarRespaldoPaso2,
   respaldarPaso2,
 } from '../(servicios)/respaldar-formularios';
-import ciold from '../../../img/ci-antigua.png';
-import cinueva from '../../../img/ci-nueva.png';
 import ModalTerminosAndCondiciones from './(componentes)/modal-terminos-y-condiciones';
 import {
   EmpleadorYaExisteError,
   UsuarioYaExisteError,
   adscribirEmpleador,
 } from './(servicios)/adscribir-empleador';
-import { validarNumeroDeSerie } from './(servicios)/validar-numero-de-serie';
+
 const PasoDosPage: React.FC<{}> = ({}) => {
   const step = [
     { label: 'Datos Entidad Empleadora', num: 1, active: false, url: '/adscripcion' },
     { label: 'Datos persona Administradora', num: 2, active: true, url: '/adscripcion/pasodos' },
   ];
 
-  const [show, setShow] = useState(false);
   const [mostrarSpinner, setMostrarSpinner] = useState(false);
-  const target = useRef(null);
 
   const valoresPorDefecto: CamposAdscripcionPaso2 = {
     runAdmin: '',
@@ -54,27 +55,18 @@ const PasoDosPage: React.FC<{}> = ({}) => {
 
   const { stepper } = useContext(StepContext);
 
-  const { empleador, administrador, datosPasodos, datosAdmin } = useContext(InscribeContext);
+  const { empleador, datosPasodos, datosAdmin } = useContext(InscribeContext);
 
   const [abrirModal, setAbrirModal] = useState(false);
 
-  const {
-    register,
-    handleSubmit,
-    getValues,
-    setValue,
-    setError,
-    watch,
-    clearErrors,
-    formState: { errors },
-  } = useForm<CamposAdscripcionPaso2>({
+  const formulario = useForm<CamposAdscripcionPaso2>({
     defaultValues: valoresPorDefecto,
     mode: 'onBlur',
   });
 
+  // Respalda cambios al formulario en el local storage
   useEffect(() => {
-    // Respalda cambios al formulario
-    const subscripcion = watch(
+    const subscripcion = formulario.watch(
       (campos: any) => respaldarPaso2(campos as CamposAdscripcionPaso2),
       valoresPorDefecto,
     );
@@ -84,8 +76,8 @@ const PasoDosPage: React.FC<{}> = ({}) => {
     };
   }, []);
 
+  // Parcha el formulario
   useEffect(() => {
-    // Parcha el formulario
     const campos = buscarRespaldoPaso2();
 
     if (!campos) {
@@ -93,22 +85,18 @@ const PasoDosPage: React.FC<{}> = ({}) => {
     }
 
     for (const key of Object.keys(campos) as [keyof CamposAdscripcionPaso2]) {
-      setValue(key, campos[key]);
+      formulario.setValue(key, campos[key]);
     }
   }, []);
 
+  // Parchar contexto empleador
   useEffect(() => {
-    // Parchar contexto empleador
     const respaldoEmpleador = buscarRespaldoPaso1();
 
     if (!respaldoEmpleador) {
-      Swal.fire({
-        icon: 'error',
+      AlertaError.fire({
         title: 'Paso 1 Incompleto',
         text: 'Debe ingresar los datos de la entidad empleadora antes de continuar',
-        showConfirmButton: true,
-        confirmButtonText: 'Completar',
-        confirmButtonColor: 'var(--color-blue)',
       }).then(() => {
         router.push('/adscripcion');
       });
@@ -157,66 +145,6 @@ const PasoDosPage: React.FC<{}> = ({}) => {
     });
   }, []);
 
-  // TODO: Parece que sirve para cargar a la persona administradora cuando existe y precargar
-  // const ObtieneUsuario = async (e: KeyboardEvent<HTMLInputElement>) => {
-  //   if (!e.currentTarget.value) return;
-  //   if (e.key == 'Tab') {
-  //     try {
-  //       const query: Response = await fetch(
-  //         `${apiUrl()}/empleador/usuario/rut/{rutusuario}?rutusuario=` +
-  //           formIni.rutadm,
-  //       );
-  //       const data: user = await query.json();
-  //       setdatoUsuario(data);
-  //     } catch (error: any) {
-  //       Swal.fire({
-  //         title: 'Error',
-  //         icon: 'error',
-  //         text: error?.message,
-  //       });
-  //     }
-  //   }
-  // };
-
-  const permitirSoloNumeros = (campo: keyof CamposAdscripcionPaso2) => {
-    return (event: any) => {
-      /** Hace match con cualquier caracter que no sea un numero */
-      const regex = /[^0-9]/g;
-      const valor = event.target.value as string;
-
-      if (regex.test(valor)) {
-        const valorSoloDigitos = valor.replaceAll(regex, '');
-        setValue(campo, valorSoloDigitos);
-      }
-    };
-  };
-
-  const validaSerie = async () => {
-    if (errors.runAdmin) {
-      return;
-    }
-
-    const [rut, dv] = getValues('runAdmin').split('-');
-    if (!rut || !dv) {
-      return;
-    }
-
-    try {
-      await validarNumeroDeSerie({
-        rut,
-        dv,
-        serie: getValues('numeroSerie'),
-      });
-
-      clearErrors('numeroSerie');
-    } catch (error) {
-      setError('numeroSerie', {
-        type: 'custom',
-        message: 'Debe ingresar un número de serie válido',
-      });
-    }
-  };
-
   const confirmarAdscripcion: SubmitHandler<CamposAdscripcionPaso2> = async (data: any) => {
     if (!data.aceptaTerminos) {
       throw new Error('No se han aceptado los terminos y condiciones');
@@ -242,10 +170,7 @@ const PasoDosPage: React.FC<{}> = ({}) => {
       });
 
       setTimeout(() => {
-        Swal.fire({
-          icon: 'success',
-          timer: 2000,
-          showConfirmButton: false,
+        AlertaExito.fire({
           text: 'Adscripción realizada con éxito',
           willClose: () => {
             datosPasodos({
@@ -309,414 +234,162 @@ const PasoDosPage: React.FC<{}> = ({}) => {
     } catch (error) {
       setMostrarSpinner(false);
       if (error instanceof UsuarioYaExisteError) {
-        await Swal.fire({
-          title: 'Persona administradora ya existe',
-          icon: 'error',
-          showConfirmButton: true,
-          confirmButtonColor: 'var(--color-blue)',
-        });
+        AlertaError.fire({ title: 'Persona administradora ya existe' });
 
-        setError('runAdmin', {
+        formulario.setError('runAdmin', {
           type: 'custom',
           message: 'RUN ya existe',
         });
       } else if (error instanceof EmpleadorYaExisteError) {
-        await Swal.fire({
-          title: 'RUN del empleador ya existe',
-          icon: 'error',
-          showConfirmButton: true,
-          confirmButtonColor: 'var(--color-blue)',
-        });
+        AlertaError.fire({ title: 'RUN del empleador ya existe' });
       } else {
-        await Swal.fire({
+        AlertaError.fire({
           title: 'Error en la adscripción',
           text: 'Por favor confirme que todos los datos hayan sido ingresados y esten correctos',
-          icon: 'error',
-          showConfirmButton: true,
-          confirmButtonColor: 'var(--color-blue)',
         });
       }
     }
   };
 
-  const onChangeRunPersonaAdministradora: ((event: any) => void) | undefined = (event) => {
-    const regex = /[^0-9kK\-\.]/g; // solo números, puntos, guiones y la letra K
-    const run = event.target.value as string;
-    if (event.target.value.length > 10) return;
-
-    if (regex.test(run)) {
-      const soloCaracteresValidos = run.replaceAll(regex, '');
-      setValue('runAdmin', soloCaracteresValidos);
-    }
-  };
-
-  const trimInput = (campo: keyof CamposAdscripcionPaso2) => {
-    const value = getValues(campo);
-
-    if (typeof value === 'string') {
-      setValue(campo, value.trim(), { shouldValidate: true });
-    }
-  };
-
   return (
     <>
-      <div
-        className={'spinner'}
-        style={{
-          display: mostrarSpinner ? '' : 'none',
-        }}>
-        <ClipLoader
-          color={'var(--color-blue)'}
-          loading={true}
-          size={150}
-          aria-label="Loading Spinner"
-          data-testid="loader"
-        />
-      </div>
+      <SpinnerPantallaCompleta show={mostrarSpinner} />
+
       <div className="pb-3 px-3 pb-md-4 px-md-4 px-lg-5 bgads ">
-        <form
-          className="needs-validation mx-auto"
-          onSubmit={handleSubmit(confirmarAdscripcion)}
-          noValidate>
-          <Titulo manual="Manual" url="#">
-            Inscribe tu empresa / Datos Administrador
-          </Titulo>
+        <FormProvider {...formulario}>
+          <form
+            className="needs-validation mx-auto"
+            onSubmit={formulario.handleSubmit(confirmarAdscripcion)}
+            noValidate>
+            <Titulo manual="Manual" url="#">
+              Inscribe tu empresa / Datos Administrador
+            </Titulo>
 
-          <div className="mt-3 mb-4 mx-0 mx-md-5">
-            <Stepper Options={step} />
-          </div>
-
-          <div className="mx-auto" style={{ maxWidth: '768px' }}>
-            <div className="row my-3">
-              <div className="col-12 d-flex justify-content-end">
-                <div style={{ color: 'blueviolet' }}>
-                  <span>
-                    <small>(*) Son campos obligatorios.</small>
-                  </span>
-                </div>
-              </div>
+            <div className="mt-3 mb-4 mx-0 mx-md-5">
+              <Stepper Options={step} />
             </div>
 
-            <div className="row mt-3 g-3 align-items-baseline">
-              <div className="col-12 col-md-6 position-relative">
-                <label htmlFor="runAdministrador" className="form-label">
-                  RUN de la persona Administradora
-                </label>
-                <input
-                  id="runAdministrador"
-                  type="text"
-                  maxLength={10}
-                  autoComplete="new-custom-value"
-                  className={`form-control ${errors.runAdmin ? 'is-invalid' : ''}`}
-                  {...register('runAdmin', {
-                    required: {
-                      value: true,
-                      message: 'Este campo es obligatorio',
-                    },
-                    validate: {
-                      esRut: (run: string) =>
-                        validateRut(run) ? undefined : 'Debe ingresar un RUN válido',
-                    },
-                    maxLength: {
-                      value: 10,
-                      message: 'Debe ingresar menos de 10 digitos',
-                    },
-                    onChange: onChangeRunPersonaAdministradora,
-                    onBlur: (event: any) => {
-                      const run = event.target.value;
-                      if (validateRut(run)) {
-                        setValue('runAdmin', formatRut(run, false));
-                      }
-
-                      if (!errors.runAdmin) {
-                        clearErrors('runAdmin');
-                      }
-                    },
-                  })}
-                />
-                {errors.runAdmin && (
-                  <div className="invalid-tooltip">{errors.runAdmin?.message}</div>
-                )}
-              </div>
-
-              <div className={`col-12 col-md-6 position-relative`}>
-                <label htmlFor="numeroSerie" className="form-label">
-                  N° Documento Cedula Identidad &nbsp;
-                </label>
-                <i
-                  ref={target}
-                  className="text-primary bi bi-question-circle"
-                  onMouseOver={() => setShow(!show)}
-                  onMouseLeave={() => setShow(!show)}
-                  onClick={() => setShow(!show)}></i>
-                <Overlay target={target.current} show={show} placement="top">
-                  {({
-                    placement: _placement,
-                    arrowProps: _arrowProps,
-                    show: _show,
-                    popper: _popper,
-                    hasDoneInitialMeasure: _hasDoneInitialMeasure,
-                    ...props
-                  }) => (
-                    <div
-                      {...props}
-                      style={{
-                        position: 'absolute',
-                        backgroundColor: 'var(--color-blue)',
-                        padding: '2px 10px',
-                        color: 'white',
-                        borderRadius: 4,
-                        ...props.style,
-                      }}>
-                      <img width="220px" src={ciold.src}></img>
-                      <img width="220px" src={cinueva.src}></img>
-                    </div>
-                  )}
-                </Overlay>
-
-                <input
-                  id="numeroSerie"
-                  type="text"
-                  autoComplete="new-custom-value"
-                  placeholder="EJ: 111222333 O A1234567890"
-                  maxLength={11}
-                  className={`form-control ${errors.numeroSerie ? 'is-invalid' : ''}`}
-                  {...register('numeroSerie', {
-                    required: {
-                      value: true,
-                      message: 'Este campo es obligatorio',
-                    },
-                    minLength: {
-                      value: 9,
-                      message: 'No puede tener menos de 9 dígitos',
-                    },
-                    maxLength: {
-                      value: 11,
-                      message: 'No puede tener más de 11 dígitos',
-                    },
-                    pattern: {
-                      value: /^(\d{9}|A\d{10})$/g,
-                      message: 'Formato debe ser 111222333 o A1234567890',
-                    },
-                    onChange: (e: ChangeEvent<HTMLInputElement>) => {
-                      const regex = /[^0-9aA]/g;
-                      const valor = e.target.value.toUpperCase() as string;
-
-                      if (regex.test(valor)) {
-                        const formatvalue = valor.replaceAll(regex, '');
-                        setValue('numeroSerie', formatvalue.toUpperCase());
-                      }
-                    },
-                    onBlur: () => validaSerie(),
-                  })}
-                />
-                {errors.numeroSerie && (
-                  <div className="invalid-tooltip">{errors.numeroSerie?.message}</div>
-                )}
-              </div>
-
-              <div className="col-12 col-md-6 position-relative">
-                <label htmlFor="nombres" className="form-label">
-                  Nombres
-                </label>
-                <input
-                  id="nombres"
-                  type="text"
-                  autoComplete="new-password"
-                  className={`form-control ${errors.nombres ? 'is-invalid' : ''}`}
-                  {...register('nombres', {
-                    required: {
-                      message: 'Este campo es obligatorio',
-                      value: true,
-                    },
-                    minLength: {
-                      value: 4,
-                      message: 'Debe tener al menos 4 caracteres',
-                    },
-                    maxLength: {
-                      value: 80,
-                      message: 'Debe tener a lo más 80 caracteres',
-                    },
-                    onBlur: () => trimInput('nombres'),
-                  })}
-                />
-                {errors.nombres && <div className="invalid-tooltip">{errors.nombres?.message}</div>}
-              </div>
-
-              <div className="col-12 col-md-6 position-relative">
-                <div className="form-group">
-                  <label htmlFor="apellidos" className="form-label">
-                    Apellidos
-                  </label>
-                  <input
-                    id="apellidos"
-                    type="text"
-                    autoComplete="new-password"
-                    className={`form-control ${errors.apellidos ? 'is-invalid' : ''}`}
-                    {...register('apellidos', {
-                      required: {
-                        message: 'Este campo es obligatorio',
-                        value: true,
-                      },
-                      minLength: {
-                        value: 4,
-                        message: 'Debe tener al menos 4 caracteres',
-                      },
-                      maxLength: {
-                        value: 80,
-                        message: 'Debe tener a lo más 80 caracteres',
-                      },
-                      onBlur: () => trimInput('apellidos'),
-                    })}
-                  />
-                  {errors.apellidos && (
-                    <div className="invalid-tooltip">{errors.apellidos?.message}</div>
-                  )}
-                </div>
-              </div>
-
-              <div className="col-12 col-md-6 position-relative">
-                <label htmlFor="email" className="form-label">
-                  Correo electrónico de la persona Administradora (*)
-                </label>
-                <input
-                  id="email"
-                  type="mail"
-                  autoComplete="new-password"
-                  placeholder="ejemplo@ejemplo.cl"
-                  onPaste={(e) => e.preventDefault()}
-                  onCopy={(e) => e.preventDefault()}
-                  className={`form-control ${errors.email ? 'is-invalid' : ''}`}
-                  {...register('email', {
-                    required: {
-                      value: true,
-                      message: 'Este campo es obligatorio',
-                    },
-                    maxLength: {
-                      value: 250,
-                      message: 'No puede tener más de 250 caracteres',
-                    },
-                    validate: {
-                      esEmail: (email: string) => (isEmail(email) ? undefined : 'Correo inválido'),
-                    },
-                  })}
-                />
-                {errors.email && <div className="invalid-tooltip">{errors.email?.message}</div>}
-              </div>
-
-              <div className="col-12 col-md-6 position-relative">
-                <label htmlFor="emailConfirma" className="form-label">
-                  Repetir correo electrónico de la persona Administradora (*)
-                </label>
-                <input
-                  id="emailConfirma"
-                  type="mail"
-                  autoComplete="new-custom-value"
-                  placeholder="ejemplo@ejemplo.cl"
-                  onPaste={(e) => e.preventDefault()}
-                  onCopy={(e) => e.preventDefault()}
-                  className={`form-control ${errors.emailConfirma ? 'is-invalid' : ''}`}
-                  {...register('emailConfirma', {
-                    required: {
-                      value: true,
-                      message: 'Este campo es obligatorio',
-                    },
-                    maxLength: {
-                      value: 250,
-                      message: 'No puede tener más de 250 caracteres',
-                    },
-                    validate: {
-                      esEmail: (email: string) => (isEmail(email) ? undefined : 'Correo inválido'),
-                      emailCoinciden: (emailConfirmar: string) => {
-                        if (getValues('email') !== emailConfirmar) {
-                          return 'Correos no coinciden';
-                        }
-                      },
-                    },
-                  })}
-                />
-                {errors.emailConfirma && (
-                  <div className="invalid-tooltip">{errors.emailConfirma?.message}</div>
-                )}
-              </div>
-            </div>
-
-            <div className="row my-4">
-              <div className="col-12">
-                <div className="form-check position-relative">
-                  <input
-                    id="aceptaTerminos"
-                    type="checkbox"
-                    className={`form-check-input ${errors.aceptaTerminos ? 'is-invalid' : ''}`}
-                    {...register('aceptaTerminos', {
-                      required: {
-                        value: true,
-                        message: 'Se deben aceptar los términos y condiciones',
-                      },
-                    })}
-                  />
-                  <label className="form-check-label" htmlFor="aceptaTerminos">
-                    He leído y acepto los{' '}
-                    <span
-                      className="text-primary form-check-label"
-                      style={{ cursor: 'pointer' }}
-                      onClick={(e) => {
-                        e.preventDefault(); // previene que se haga marque/desmarque el checkbox al abrir el modal
-                        setAbrirModal(true);
-                      }}>
-                      Términos y Condiciones del servicio
+            <div className="mx-auto" style={{ maxWidth: '768px' }}>
+              <div className="row my-3">
+                <div className="col-12 d-flex justify-content-end">
+                  <div style={{ color: 'blueviolet' }}>
+                    <span>
+                      <small>(*) Son campos obligatorios.</small>
                     </span>
-                  </label>
-                  {errors.aceptaTerminos && (
-                    <div className="invalid-tooltip">{errors.aceptaTerminos.message}</div>
-                  )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="row mt-3 g-3 align-items-baseline">
+                <InputRut
+                  name="runAdmin"
+                  label="RUN de la persona Administradora"
+                  tipo="rut"
+                  className="col-12 col-md-6"
+                />
+
+                <InputNumeroDeSerie
+                  name="numeroSerie"
+                  label="N° Documento Cedula Identidad"
+                  rutAsociado="runAdmin"
+                  className="col-12 col-md-6"
+                />
+
+                <InputNombres name="nombres" label="Nombres" className="col-12 col-md-6" />
+
+                <InputApellidos name="apellidos" label="Apellidos" className="col-12 col-md-6" />
+
+                <InputEmail
+                  name="email"
+                  label="Correo electrónico de la persona Administradora"
+                  className="col-12 col-md-6"
+                />
+
+                <InputEmail
+                  name="emailConfirma"
+                  label="Repetir correo electrónico de la persona Administradora"
+                  className="col-12 col-md-6"
+                  debeCoincidirCon="email"
+                />
+              </div>
+
+              <div className="row my-4">
+                <div className="col-12">
+                  <div className="form-check position-relative">
+                    <input
+                      id="aceptaTerminos"
+                      type="checkbox"
+                      className={`form-check-input ${
+                        formulario.formState.errors.aceptaTerminos ? 'is-invalid' : ''
+                      }`}
+                      {...formulario.register('aceptaTerminos', {
+                        required: {
+                          value: true,
+                          message: 'Se deben aceptar los términos y condiciones',
+                        },
+                      })}
+                    />
+                    <label className="form-check-label" htmlFor="aceptaTerminos">
+                      He leído y acepto los{' '}
+                      <span
+                        className="text-primary form-check-label"
+                        style={{ cursor: 'pointer' }}
+                        onClick={(e) => {
+                          e.preventDefault(); // previene que se haga marque/desmarque el checkbox al abrir el modal
+                          setAbrirModal(true);
+                        }}>
+                        Términos y Condiciones del servicio
+                      </span>
+                    </label>
+                    <IfContainer show={formulario.formState.errors.aceptaTerminos}>
+                      <div className="invalid-tooltip">
+                        {formulario.formState.errors.aceptaTerminos?.message}
+                      </div>
+                    </IfContainer>
+                  </div>
+                </div>
+              </div>
+
+              <div className="row mt-2">
+                <div className="d-flex flex-column flex-md-row-reverse">
+                  <button type="submit" className="btn btn-primary">
+                    Confirmar Adscripción
+                  </button>
+                  <Link
+                    href={'/adscripcion'}
+                    className="mt-2 mt-md-0 me-md-2 btn btn-danger"
+                    onClick={() => stepper(1)}>
+                    Volver
+                  </Link>
                 </div>
               </div>
             </div>
-
-            <div className="row mt-2">
-              <div className="d-flex flex-column flex-md-row-reverse">
-                <button
-                  type="submit"
-                  // disabled={!terminosCheck}
-                  className="btn btn-primary">
-                  Confirmar Adscripción
-                </button>
-                <Link
-                  href={'/adscripcion'}
-                  className="mt-2 mt-md-0 me-md-2 btn btn-danger"
-                  onClick={() => stepper(1)}>
-                  Volver
-                </Link>
-              </div>
-            </div>
-          </div>
-        </form>
+          </form>
+        </FormProvider>
       </div>
 
-      {abrirModal && (
-        <ModalTerminosAndCondiciones
-          onTerminosAceptados={() => {
-            setValue('aceptaTerminos', true, {
-              shouldValidate: true,
-              shouldDirty: true,
-              shouldTouch: true,
-            });
-            setAbrirModal(false);
-          }}
-          onCerrar={() => {
-            setAbrirModal(false);
-          }}
-          onRechazarTerminos={() => {
-            setValue('aceptaTerminos', false, {
-              shouldValidate: true,
-              shouldDirty: true,
-              shouldTouch: true,
-            });
-            setAbrirModal(false);
-          }}
-        />
-      )}
+      <ModalTerminosAndCondiciones
+        show={abrirModal}
+        onTerminosAceptados={() => {
+          formulario.setValue('aceptaTerminos', true, {
+            shouldValidate: true,
+            shouldDirty: true,
+            shouldTouch: true,
+          });
+          setAbrirModal(false);
+        }}
+        onCerrar={() => {
+          setAbrirModal(false);
+        }}
+        onRechazarTerminos={() => {
+          formulario.setValue('aceptaTerminos', false, {
+            shouldValidate: true,
+            shouldDirty: true,
+            shouldTouch: true,
+          });
+          setAbrirModal(false);
+        }}
+      />
     </>
   );
 };
