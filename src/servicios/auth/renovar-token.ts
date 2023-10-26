@@ -1,8 +1,6 @@
-import { UserData } from '@/modelos/user-data';
 import { apiUrl } from '@/servicios/environment';
 import { runFetchConThrow } from '@/servicios/fetch';
-import jwt_decode from 'jwt-decode';
-import { setCookie } from 'nookies';
+import { setearCookieAutenticacion } from './cookie-autenticacion';
 import { obtenerToken } from './obtener-token';
 
 /**
@@ -22,10 +20,7 @@ export const renovarToken = async (): Promise<string> => {
     },
   );
 
-  const tokenDecodificado = jwt_decode(token.substring('Bearer '.length)) as UserData;
-  const maxAge = tokenDecodificado.exp - tokenDecodificado.iat;
-
-  setCookie(null, 'token', token, { maxAge, path: '/' });
+  setearCookieAutenticacion(token);
 
   return token;
 };
