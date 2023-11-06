@@ -97,6 +97,7 @@ const ModalCambiarClaveTemporal: React.FC<ModalCambiarClaveTemporalProps> = ({
               />
 
               <InputClave
+                validarFortaleza
                 name="claveNueva"
                 label="Contraseña Nueva"
                 className="mb-3"
@@ -114,93 +115,6 @@ const ModalCambiarClaveTemporal: React.FC<ModalCambiarClaveTemporalProps> = ({
                   requerida: 'Debe repetir la contraseña',
                 }}
               />
-              {/*             
-            <label className="form-label" htmlFor="transitoria">
-              Contraseña transitoria
-            </label>
-            <div className="input-group mb-3 position-relative">
-              <input
-                id="transitoria"
-                type={verClaveTemporal ? 'text' : 'password'}
-                className={`form-control ${errors.claveTransitoria ? 'is-invalid' : ''}`}
-                autoComplete="new-custom-value"
-                {...register('claveTransitoria', {
-                  required: 'La contraseña transitoria es obligatoria',
-                })}
-              />
-              <button
-                className="btn btn-primary"
-                type="button"
-                tabIndex={-1}
-                id="button-addon2"
-                title={verClaveTemporal ? 'Ocultar clave' : 'Ver clave'}
-                onClick={() => setVerClaveTemporal((x) => !x)}>
-                <i className={`bi ${verClaveTemporal ? 'bi-eye-slash-fill' : 'bi-eye-fill'}`}></i>
-              </button>
-              <IfContainer show={errors.claveTransitoria}>
-                <div className="invalid-tooltip">{errors.claveTransitoria?.message}</div>
-              </IfContainer>
-            </div>
-
-            <label className="form-label" htmlFor="claveNueva">
-              Contraseña Nueva
-            </label>
-            <div className="input-group mb-3 position-relative">
-              <input
-                id="claveNueva"
-                type={verNuevaClave ? 'text' : 'password'}
-                className={`form-control ${errors.claveNueva ? 'is-invalid' : ''}`}
-                autoComplete="new-custom-value"
-                {...register('claveNueva', {
-                  required: 'La contraseña nueva es obligatoria',
-                })}
-              />
-              <button
-                className="btn btn-primary"
-                type="button"
-                tabIndex={-1}
-                id="button-addon2"
-                title={verNuevaClave ? 'Ocultar clave' : 'Ver clave'}
-                onClick={() => setVerNuevaClave((x) => !x)}>
-                <i className={`bi ${verNuevaClave ? 'bi-eye-slash-fill' : 'bi-eye-fill'}`}></i>
-              </button>
-              <IfContainer show={errors.claveNueva}>
-                <div className="invalid-tooltip">{errors.claveNueva?.message}</div>
-              </IfContainer>
-            </div>
-
-            <label className="form-label" htmlFor="confirmaClaveNueva">
-              Repetir Contraseña
-            </label>
-            <div className="input-group mb-3 position-relative">
-              <input
-                id="confirmaClaveNueva"
-                type={verConfirmaClave ? 'text' : 'password'}
-                className={`form-control ${errors.confirmaClave ? 'is-invalid' : ''}`}
-                autoComplete="new-custom-value"
-                {...register('confirmaClave', {
-                  required: 'Debe repetir la contraseña',
-                  validate: (confirmaClave) => {
-                    const claveNueva = getValues('claveNueva');
-                    if (claveNueva !== confirmaClave) {
-                      return 'Las contraseñas no coinciden';
-                    }
-                  },
-                })}
-              />
-              <button
-                className="btn btn-primary"
-                type="button"
-                tabIndex={-1}
-                id="button-addon2"
-                title={verConfirmaClave ? 'Ocultar clave' : 'Ver clave'}
-                onClick={() => setVerConfirmaClave((x) => !x)}>
-                <i className={`bi ${verConfirmaClave ? 'bi-eye-slash-fill' : 'bi-eye-fill'}`}></i>
-              </button>
-              <IfContainer show={errors.confirmaClave}>
-                <div className="invalid-tooltip">{errors.confirmaClave?.message}</div>
-              </IfContainer>
-            </div> */}
             </Modal.Body>
             <Modal.Footer>
               <button type="button" className="btn btn-secondary" onClick={handleCerrarModal}>
