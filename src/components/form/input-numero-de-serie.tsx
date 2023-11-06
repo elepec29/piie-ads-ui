@@ -1,14 +1,14 @@
-import { useRandomId } from '@/hooks/use-random-id';
 import ciold from '@/img/ci-antigua.png';
 import cinueva from '@/img/ci-nueva.png';
 import { validarNumeroDeSerie } from '@/servicios/validar-numero-de-serie';
 import React, { useRef, useState } from 'react';
 import { Form, FormGroup, Overlay } from 'react-bootstrap';
 import { useFormContext } from 'react-hook-form';
-import { BaseProps } from './base-props';
+import IfContainer from '../if-container';
+import { InputReciclableBase } from './base-props';
+import { useInputReciclable } from './hooks';
 
-interface InputNumeroDeSerieProps extends BaseProps {
-  opcional?: boolean;
+interface InputNumeroDeSerieProps extends InputReciclableBase {
   rutAsociado: string;
 }
 
@@ -19,8 +19,6 @@ export const InputNumeroDeSerie: React.FC<InputNumeroDeSerieProps> = ({
   rutAsociado,
   className,
 }) => {
-  const idInput = useRandomId('numeroSerie');
-
   const target = useRef(null);
 
   const [show, setShow] = useState(false);
@@ -33,6 +31,15 @@ export const InputNumeroDeSerie: React.FC<InputNumeroDeSerieProps> = ({
     clearErrors,
     setError,
   } = useFormContext();
+
+  const { idInput, textoLabel, tieneError, mensajeError } = useInputReciclable({
+    name,
+    prefijoId: 'numeroSerie',
+    label: {
+      texto: label,
+      opcional,
+    },
+  });
 
   const validaSerie = async (numeroSerie: string) => {
     if (errors[rutAsociado]) {
@@ -63,45 +70,47 @@ export const InputNumeroDeSerie: React.FC<InputNumeroDeSerieProps> = ({
   return (
     <>
       <FormGroup className={`${className ?? ''} position-relative`} controlId={idInput}>
-        <Form.Label>
-          {`${label} (*) `}
+        <IfContainer show={textoLabel}>
+          <Form.Label>
+            {textoLabel}
 
-          <i
-            ref={target}
-            className="text-primary bi bi-question-circle"
-            onMouseOver={() => setShow(!show)}
-            onMouseLeave={() => setShow(!show)}
-            onClick={() => setShow(!show)}></i>
-          <Overlay target={target.current} show={show} placement="top">
-            {({
-              placement: _placement,
-              arrowProps: _arrowProps,
-              show: _show,
-              popper: _popper,
-              hasDoneInitialMeasure: _hasDoneInitialMeasure,
-              ...props
-            }) => (
-              <div
-                {...props}
-                style={{
-                  position: 'absolute',
-                  backgroundColor: 'var(--color-blue)',
-                  padding: '2px 10px',
-                  color: 'white',
-                  borderRadius: 4,
-                  ...props.style,
-                }}>
-                <img width="220px" src={ciold.src}></img>
-                <img width="220px" src={cinueva.src}></img>
-              </div>
-            )}
-          </Overlay>
-        </Form.Label>
+            <i
+              ref={target}
+              className="ms-2 text-primary bi bi-question-circle"
+              onMouseOver={() => setShow(!show)}
+              onMouseLeave={() => setShow(!show)}
+              onClick={() => setShow(!show)}></i>
+            <Overlay target={target.current} show={show} placement="top">
+              {({
+                placement: _placement,
+                arrowProps: _arrowProps,
+                show: _show,
+                popper: _popper,
+                hasDoneInitialMeasure: _hasDoneInitialMeasure,
+                ...props
+              }) => (
+                <div
+                  {...props}
+                  style={{
+                    position: 'absolute',
+                    backgroundColor: 'var(--color-blue)',
+                    padding: '2px 10px',
+                    color: 'white',
+                    borderRadius: 4,
+                    ...props.style,
+                  }}>
+                  <img width="220px" src={ciold.src}></img>
+                  <img width="220px" src={cinueva.src}></img>
+                </div>
+              )}
+            </Overlay>
+          </Form.Label>
+        </IfContainer>
 
         <Form.Control
           type="text"
           autoComplete="new-custom-value"
-          isInvalid={!!errors[name]}
+          isInvalid={tieneError}
           {...register(name, {
             required: {
               value: !opcional,
@@ -138,7 +147,7 @@ export const InputNumeroDeSerie: React.FC<InputNumeroDeSerieProps> = ({
         />
 
         <Form.Control.Feedback type="invalid" tooltip>
-          {errors[name]?.message?.toString()}
+          {mensajeError}
         </Form.Control.Feedback>
       </FormGroup>
     </>
