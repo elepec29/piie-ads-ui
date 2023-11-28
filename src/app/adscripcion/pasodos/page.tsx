@@ -13,7 +13,7 @@ import { Stepper } from '@/components/stepper/stepper';
 import Titulo from '@/components/titulo';
 import { InscribeContext } from '@/contexts/inscribir-context';
 import StepContext from '@/contexts/step-context';
-import { Administrador } from '@/interface/adscripcion';
+import { Administrador } from '@/modelos/adscripcion';
 import { AlertaError, AlertaExito } from '@/utilidades';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';

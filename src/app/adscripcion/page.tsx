@@ -16,7 +16,7 @@ import { Stepper } from '@/components/stepper/stepper';
 import Titulo from '@/components/titulo';
 import { InscribeContext } from '@/contexts';
 import { useMergeFetchArray } from '@/hooks/use-merge-fetch';
-import { Empleador } from '@/interface/adscripcion';
+import { Empleador } from '@/modelos/adscripcion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useContext, useEffect, useState } from 'react';
