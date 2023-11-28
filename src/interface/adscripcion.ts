@@ -1,8 +1,3 @@
-export interface Welcome {
-  empleador: Empleador;
-  administrador: Administrador;
-}
-
 export interface Administrador {
   rut: string;
   nombres: string;
@@ -65,51 +60,3 @@ export interface Tipoempleador {
   idtipoempleador: number;
   tipoempleador: string | undefined;
 }
-
-export type user = {
-  rutusuario: string;
-  nombres: string;
-  apellidos: string;
-  email: string;
-};
-
-export type errorInput = {
-  input: string;
-  msg: string;
-};
-
-export type respLogin = {
-  error?: string;
-  message: string;
-  statusCode: number;
-  data?: [];
-};
-
-export type formdata = {
-  rut?: string | undefined;
-  razon?: string | undefined;
-  tipoentidademp?: string | undefined;
-  ccaf?: string | undefined;
-  activlab?: string | undefined;
-  ccomuna?: string | undefined;
-  calle?: string | undefined;
-  numero?: string | undefined;
-  bdep?: string | undefined;
-  tf1?: string | undefined;
-  tf2?: string | undefined;
-  cemple?: string | undefined;
-  recemple?: string | undefined;
-  npersonas?: string | undefined;
-  sremun?: string | undefined;
-};
-
-export type formdata2 = {
-  rutadm: string;
-  numserie: string | undefined;
-  nombres: string | undefined;
-  apellidos: string | undefined;
-  cemple: string | undefined;
-  recemple: string | undefined;
-  captcha: string | undefined;
-  terminos?: boolean;
-};
