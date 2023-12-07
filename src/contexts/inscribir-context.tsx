@@ -1,17 +1,17 @@
 'use client';
 
-import { ReactNode, useState, createContext } from 'react';
 import {
-  Actividadlaboral,
+  ActividadLaboral,
   Administrador,
-  Ccaf,
+  CajaDeCompensacion,
   Comuna,
-  Empleador,
-  Tamanoempresa,
-  Tipoempleador,
-  Sistemaremuneracion,
   DireccionEmpleador,
-} from '../interface/adscripcion';
+  Empleador,
+  SistemaRemuneracion,
+  TamanoEmpresa,
+  TipoEmpleador,
+} from '@/modelos/adscripcion';
+import { ReactNode, createContext, useState } from 'react';
 
 type myAppProps = {
   children: ReactNode;
@@ -24,22 +24,22 @@ type InscribeContextType = {
   datosPasodos: (adminEmpleador: Administrador) => void;
 };
 
-let tipoEmpleador: Tipoempleador = {
+let tipoEmpleador: TipoEmpleador = {
   idtipoempleador: 0,
   tipoempleador: '',
 };
 
-let ccaf: Ccaf = {
+let ccaf: CajaDeCompensacion = {
   idccaf: 0,
   nombre: '',
 };
 
-let Actividadlaboral: Actividadlaboral = {
+let ActividadLaboral: ActividadLaboral = {
   idactividadlaboral: 0,
   actividadlaboral: '',
 };
 
-let Tamanoempresa: Tamanoempresa = {
+let TamanoEmpresa: TamanoEmpresa = {
   idtamanoempresa: 0,
   nrotrabajadores: 0,
   descripcion: '',
@@ -50,7 +50,7 @@ let Comuna: Comuna = {
   nombre: '',
 };
 
-let Sistemaremuneracion: Sistemaremuneracion = {
+let SistemaRemuneracion: SistemaRemuneracion = {
   idsistemaremuneracion: 0,
   descripcion: '',
 };
@@ -71,9 +71,9 @@ let empleadors: Empleador = {
   emailconfirma: '',
   tipoempleador: tipoEmpleador,
   ccaf: ccaf,
-  actividadlaboral: Actividadlaboral,
-  tamanoempresa: Tamanoempresa,
-  sistemaremuneracion: Sistemaremuneracion,
+  actividadlaboral: ActividadLaboral,
+  tamanoempresa: TamanoEmpresa,
+  sistemaremuneracion: SistemaRemuneracion,
   direccionempleador: DireccionEmpleador,
 };
 

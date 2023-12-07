@@ -1,4 +1,4 @@
-import { Administrador, Empleador } from '@/interface/adscripcion';
+import { Administrador, Empleador } from '@/modelos/adscripcion';
 import { apiUrl } from '@/servicios/environment';
 
 interface AdscribirEmpleadorRequest {
