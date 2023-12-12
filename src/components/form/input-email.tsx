@@ -30,7 +30,7 @@ export const InputEmail: React.FC<InputEmailProps> = ({
   className,
   debeCoincidirCon,
 }) => {
-  const { register, getValues } = useFormContext();
+  const { register, getValues, clearErrors } = useFormContext();
 
   const { idInput, textoLabel, tieneError, mensajeError } = useInputReciclable({
     prefijoId: 'email',
@@ -52,6 +52,7 @@ export const InputEmail: React.FC<InputEmailProps> = ({
           onCopy={(e) => e.preventDefault()}
           {...register(name, {
             required: 'Este campo es obligatorio',
+
             validate: {
               esEmail: (email) => {
                 if (!isEmail(email)) {
@@ -70,6 +71,8 @@ export const InputEmail: React.FC<InputEmailProps> = ({
                 if (email !== getValues(debeCoincidirCon)) {
                   return 'Correos no coinciden';
                 }
+
+                clearErrors(debeCoincidirCon);
               },
             },
           })}

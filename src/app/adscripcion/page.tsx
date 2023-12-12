@@ -11,25 +11,32 @@ import {
   InputRut,
   InputTelefono,
 } from '@/components/form';
-import SpinnerPantallaCompleta from '@/components/spinner-pantalla-completa';
+
 import { Stepper } from '@/components/stepper/stepper';
 import Titulo from '@/components/titulo';
 import { InscribeContext } from '@/contexts';
 import { useMergeFetchArray } from '@/hooks/use-merge-fetch';
-import { Empleador } from '@/modelos/adscripcion';
+
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useContext, useEffect, useState } from 'react';
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form';
-import { CamposAdscripcionPaso1 } from './(modelos)/campos-adscripcion-paso-1';
-import { buscarActividadesLaborales } from './(servicios)/buscar-actividades-laborales';
-import { buscarCajasDeCompensacion } from './(servicios)/buscar-cajas-de-compensacion';
-import { buscarComunas } from './(servicios)/buscar-comunas';
-import { buscarRegiones } from './(servicios)/buscar-regiones';
-import { buscarSistemasDeRemuneracion } from './(servicios)/buscar-sistemas-de-remuneracion';
-import { buscarTamanosEmpresa } from './(servicios)/buscar-tamanos-empresa';
-import { buscarTiposDeEmpleadores } from './(servicios)/buscar-tipo-de-empleadores';
-import { buscarRespaldoPaso1, respaldarPaso1 } from './(servicios)/respaldar-formularios';
+
+import { Empleador } from '@/modelos/adscripcion';
+import { CamposAdscripcionPaso1 } from './(modelos)';
+import {
+  buscarActividadesLaborales,
+  buscarCajasDeCompensacion,
+  buscarComunas,
+  buscarRegiones,
+  buscarRespaldoPaso1,
+  buscarSistemasDeRemuneracion,
+  buscarTamanosEmpresa,
+  buscarTiposDeEmpleadores,
+  respaldarPaso1,
+} from './(servicios)';
+
+const SpinnerPantallaCompleta = React.lazy(() => import('@/components/spinner-pantalla-completa'));
 
 const AdscripcionPage: React.FC<{}> = ({}) => {
   const step = [
