@@ -12,7 +12,6 @@ const AppFooter: React.FC<AppFooterProps> = ({}) => {
           <div className="col-12">
             <div className={styles['footer-content']}>
               <div className={styles['contact']}>
-                <p>Para soporte comunicarse a:</p>
                 <span>Teléfono:</span>&nbsp;<a href="tel:+56227149554">+56227149554</a> -{' '}
                 <span>Email:</span>{' '}
                 <a href="mailto:soportempleador@fonasa.gov.cl">soportempleador@fonasa.gov.cl</a>
