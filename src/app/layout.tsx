@@ -1,4 +1,5 @@
 import AppFooter from '@/components/footer/footer';
+import Version from '@/components/footer/version';
 import AppHeader from '@/components/header/header';
 import { AuthProvider, InscribeProvider, StepProvider } from '@/contexts';
 import 'animate.css';
@@ -39,7 +40,9 @@ export default function RootLayout(
               <main>{children}</main>
 
               <footer>
-                <AppFooter />
+                <AppFooter>
+                  <Version />
+                </AppFooter>
               </footer>
             </body>
 
