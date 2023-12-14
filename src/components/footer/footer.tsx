@@ -1,9 +1,11 @@
 import React from 'react';
 import styles from './footer.module.css';
 
-interface AppFooterProps {}
+interface AppFooterProps {
+  children: React.ReactNode;
+}
 
-const AppFooter: React.FC<AppFooterProps> = ({}) => {
+const AppFooter: React.FC<AppFooterProps> = ({ children }) => {
   return (
     <footer className={styles['footer-container']}>
       <div className={styles['footer-background']}>
@@ -16,6 +18,7 @@ const AppFooter: React.FC<AppFooterProps> = ({}) => {
                 <span>Email:</span>{' '}
                 <a href="mailto:soportempleador@fonasa.gov.cl">soportempleador@fonasa.gov.cl</a>
               </div>
+              {children}
             </div>
           </div>
         </div>
