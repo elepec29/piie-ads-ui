@@ -22,6 +22,8 @@ type InscribeContextType = {
   administrador: Administrador;
   datosAdmin: (entidadEmpleadora: Empleador) => void;
   datosPasodos: (adminEmpleador: Administrador) => void;
+  activaDesactivaGuia: () => void;
+  guia: boolean;
 };
 
 let tipoEmpleador: TipoEmpleador = {
@@ -92,14 +94,18 @@ export const InscribeContext = createContext<InscribeContextType>({
   administrador: administradors,
   datosAdmin: () => {},
   datosPasodos: () => {},
+  activaDesactivaGuia: () => {},
+  guia: false,
 });
 
 export const InscribeProvider: React.FC<myAppProps> = ({ children }) => {
   const [emp, setemp] = useState(empleadors);
   const [admin, setadmin] = useState(administradors);
+  const [guia, setguia] = useState(false);
 
   const datosAdmin = (entidadEmpleadora: Empleador) => setemp(entidadEmpleadora);
   const datosPasodos = (adminEmpleador: Administrador) => setadmin(adminEmpleador);
+  const activaDesactivaGuia = () => setguia(!guia);
 
   return (
     <InscribeContext.Provider
@@ -108,6 +114,8 @@ export const InscribeProvider: React.FC<myAppProps> = ({ children }) => {
         empleador: emp,
         datosAdmin,
         datosPasodos,
+        guia,
+        activaDesactivaGuia,
       }}>
       {children}
     </InscribeContext.Provider>

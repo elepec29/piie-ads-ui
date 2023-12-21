@@ -7,6 +7,7 @@ import {
   InputNumeroDeSerie,
   InputRut,
 } from '@/components/form';
+import { GuiaUsuario } from '@/components/guia-usuario';
 import IfContainer from '@/components/if-container';
 import SpinnerPantallaCompleta from '@/components/spinner-pantalla-completa';
 import { Stepper } from '@/components/stepper/stepper';
@@ -17,7 +18,7 @@ import { Administrador } from '@/modelos/adscripcion';
 import { AlertaError, AlertaExito } from '@/utilidades';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form';
 import { CamposAdscripcionPaso2 } from '../(modelos)/campos-adscripcion-paso-2';
 import {
@@ -55,7 +56,9 @@ const PasoDosPage: React.FC<{}> = ({}) => {
 
   const { stepper } = useContext(StepContext);
 
-  const { empleador, datosPasodos, datosAdmin } = useContext(InscribeContext);
+  const { empleador, datosPasodos, datosAdmin, guia } = useContext(InscribeContext);
+
+  const target = useRef(null);
 
   const [abrirModal, setAbrirModal] = useState(false);
 
@@ -268,8 +271,13 @@ const PasoDosPage: React.FC<{}> = ({}) => {
             <div className="mt-3 mb-4 mx-0 mx-md-5">
               <Stepper Options={step} />
             </div>
-
-            <div className="mx-auto" style={{ maxWidth: '768px' }}>
+            <GuiaUsuario target={target} guia={guia} placement="top-start">
+              Datos personales del administrador <br /> para la nueva entidad empleadora
+            </GuiaUsuario>
+            <div
+              className={`mx-auto ${guia && 'overlay-marco'} `}
+              style={{ maxWidth: '768px' }}
+              ref={target}>
               <div className="row my-3">
                 <div className="col-12 d-flex justify-content-end">
                   <div style={{ color: 'blueviolet' }}>

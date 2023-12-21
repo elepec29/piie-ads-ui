@@ -19,9 +19,10 @@ import { useMergeFetchArray } from '@/hooks/use-merge-fetch';
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form';
 
+import { GuiaUsuario } from '@/components/guia-usuario';
 import { Empleador } from '@/modelos/adscripcion';
 import { CamposAdscripcionPaso1 } from './(modelos)';
 import {
@@ -36,6 +37,29 @@ import {
   respaldarPaso1,
 } from './(servicios)';
 
+let InitialGuia = [
+  {
+    indice: 1,
+    nombre: 'Formulario',
+    activo: true,
+  },
+  {
+    indice: 2,
+    nombre: 'Tipo entidad empleadora',
+    activo: false,
+  },
+  {
+    indice: 3,
+    nombre: 'CCAF',
+    activo: false,
+  },
+  {
+    indice: 4,
+    nombre: 'Tamaño Empresa',
+    activo: false,
+  },
+];
+
 const SpinnerPantallaCompleta = React.lazy(() => import('@/components/spinner-pantalla-completa'));
 
 const AdscripcionPage: React.FC<{}> = ({}) => {
@@ -43,6 +67,9 @@ const AdscripcionPage: React.FC<{}> = ({}) => {
     { label: 'Datos Entidad Empleadora', num: 1, active: true, url: '/adscripcion' },
     { label: 'Datos Persona Administradora', num: 2, active: false, url: '/adscripcion/pasodos' },
   ];
+
+  const [listaGuia, setlistaGuia] =
+    useState<{ indice: number; nombre: string; activo: boolean }[]>(InitialGuia);
 
   const valoresPorDefecto: CamposAdscripcionPaso1 = {
     run: '',
@@ -89,7 +116,16 @@ const AdscripcionPage: React.FC<{}> = ({}) => {
 
   const router = useRouter();
 
-  const { datosAdmin } = useContext(InscribeContext);
+  const { datosAdmin, guia, activaDesactivaGuia } = useContext(InscribeContext);
+
+  useEffect(() => {
+    setlistaGuia(InitialGuia);
+  }, [guia]);
+
+  const target = useRef(null);
+  const tipo = useRef(null);
+  const CCAF = useRef(null);
+  const tamano = useRef(null);
 
   const formulario = useForm<CamposAdscripcionPaso1>({
     defaultValues: valoresPorDefecto,
@@ -129,6 +165,13 @@ const AdscripcionPage: React.FC<{}> = ({}) => {
       (campos) => respaldarPaso1(campos as CamposAdscripcionPaso1),
       valoresPorDefecto,
     );
+
+    if (typeof window !== 'undefined') {
+      if (localStorage.getItem('guia') === null) {
+        activaDesactivaGuia();
+        localStorage.setItem('guia', '1');
+      }
+    }
 
     return () => {
       subscripcion.unsubscribe();
@@ -218,8 +261,35 @@ const AdscripcionPage: React.FC<{}> = ({}) => {
               </div>
             </div>
           </div>
+          <GuiaUsuario guia={guia && listaGuia[0].activo} placement="top-start" target={target}>
+            Datos de la nueva entidad empleadora <br />
+            que se desea adscribir &nbsp;
+            <br />
+            <div className="text-end">
+              <button
+                className="btn btn-sm text-white"
+                onClick={() =>
+                  setlistaGuia([
+                    { indice: 1, nombre: 'Formulario', activo: false },
+                    { indice: 2, nombre: 'Tipo entidad empleadora', activo: true },
+                    { indice: 3, nombre: 'CCAF', activo: false },
+                    { indice: 4, nombre: 'Tamaño Empresa', activo: false },
+                  ])
+                }
+                style={{
+                  border: '1px solid white',
+                }}>
+                Continuar &nbsp;
+                <i className="bi bi-arrow-right"></i>
+              </button>
+            </div>
+          </GuiaUsuario>
 
-          <div className="row mt-3 g-3 align-items-baseline">
+          <div
+            className={`row mt-3 g-3 align-items-baseline ${
+              guia && listaGuia[0].activo && 'overlay-marco'
+            }`}
+            ref={target}>
             <InputRut name="run" tipo="run" className="col-12 col-md-6 col-lg-4 col-xl-3">
               RUN Entidad Empleadora /
               <br />
@@ -232,23 +302,112 @@ const AdscripcionPage: React.FC<{}> = ({}) => {
               className="col-12 col-md-6 col-lg-4 col-xl-3"
             />
 
-            <ComboSimple
-              name="tipoEntidadId"
-              datos={tiposDeEmpleadores}
-              idElemento={'idtipoempleador'}
-              descripcion={'tipoempleador'}
-              label="Tipo de Entidad Empleadora"
-              className="col-12 col-md-6 col-lg-4 col-xl-3"
-            />
+            <GuiaUsuario guia={guia && listaGuia[1].activo} placement="top-start" target={tipo}>
+              Sector al que pertenece la entidad empleadora <br />
+              <br />
+              <div className="text-end">
+                <button
+                  className="btn btn-sm text-white"
+                  onClick={() =>
+                    setlistaGuia([
+                      { indice: 1, nombre: 'Formulario', activo: true },
+                      { indice: 2, nombre: 'Tipo entidad empleadora', activo: false },
+                      { indice: 3, nombre: 'CCAF', activo: false },
+                      { indice: 4, nombre: 'Tamaño Empresa', activo: false },
+                    ])
+                  }
+                  style={{
+                    border: '1px solid white',
+                  }}>
+                  <i className="bi bi-arrow-left"></i>
+                  &nbsp; Anterior
+                </button>
+                &nbsp;
+                <button
+                  className="btn btn-sm text-white"
+                  onClick={() =>
+                    setlistaGuia([
+                      { indice: 1, nombre: 'Formulario', activo: false },
+                      { indice: 2, nombre: 'Tipo entidad empleadora', activo: false },
+                      { indice: 3, nombre: 'CCAF', activo: true },
+                      { indice: 4, nombre: 'Tamaño Empresa', activo: false },
+                    ])
+                  }
+                  style={{
+                    border: '1px solid white',
+                  }}>
+                  Continuar &nbsp;
+                  <i className="bi bi-arrow-right"></i>
+                </button>
+              </div>
+            </GuiaUsuario>
 
-            <ComboSimple
-              name="cajaCompensacionId"
-              label="Seleccione CCAF a la cual está afiliada"
-              datos={cajasDeCompensacion}
-              descripcion={'nombre'}
-              idElemento={'idccaf'}
-              className="col-12 col-md-6 col-lg-4 col-xl-3"
-            />
+            <div
+              className={`col-12 col-md-6 col-lg-4 col-xl-3 ${
+                guia && listaGuia[1].activo && 'overlay-marco'
+              }`}
+              ref={tipo}>
+              <ComboSimple
+                name="tipoEntidadId"
+                datos={tiposDeEmpleadores}
+                idElemento={'idtipoempleador'}
+                descripcion={'tipoempleador'}
+                label="Tipo de Entidad Empleadora"
+              />
+            </div>
+
+            <GuiaUsuario guia={guia && listaGuia[2].activo} placement="top-start" target={CCAF}>
+              Cajas de Compensación de Asignación Familiar (CCAF) <br />
+              <br />
+              <div className="text-end">
+                <button
+                  className="btn btn-sm text-white"
+                  onClick={() =>
+                    setlistaGuia([
+                      { indice: 1, nombre: 'Formulario', activo: false },
+                      { indice: 2, nombre: 'Tipo entidad empleadora', activo: true },
+                      { indice: 3, nombre: 'CCAF', activo: false },
+                      { indice: 4, nombre: 'Tamaño Empresa', activo: false },
+                    ])
+                  }
+                  style={{
+                    border: '1px solid white',
+                  }}>
+                  <i className="bi bi-arrow-left"></i>
+                  &nbsp; Anterior
+                </button>
+                &nbsp;
+                <button
+                  className="btn btn-sm text-white"
+                  onClick={() =>
+                    setlistaGuia([
+                      { indice: 1, nombre: 'Formulario', activo: false },
+                      { indice: 2, nombre: 'Tipo entidad empleadora', activo: false },
+                      { indice: 3, nombre: 'CCAF', activo: false },
+                      { indice: 4, nombre: 'Tamaño Empresa', activo: true },
+                    ])
+                  }
+                  style={{
+                    border: '1px solid white',
+                  }}>
+                  Continuar &nbsp;
+                  <i className="bi bi-arrow-right"></i>
+                </button>
+              </div>
+            </GuiaUsuario>
+            <div
+              className={`col-12 col-md-6 col-lg-4 col-xl-3 ${
+                guia && listaGuia[2].activo && 'overlay-marco'
+              }`}
+              ref={CCAF}>
+              <ComboSimple
+                name="cajaCompensacionId"
+                label="Seleccione CCAF a la cual está afiliada"
+                datos={cajasDeCompensacion}
+                descripcion={'nombre'}
+                idElemento={'idccaf'}
+              />
+            </div>
 
             <ComboSimple
               name="actividadLaboralId"
@@ -321,14 +480,59 @@ const AdscripcionPage: React.FC<{}> = ({}) => {
             {/* NOTA: Columna "fantasma" para mover la parte del numero de personas a una nueva linea */}
             <div className="d-none d-lg-block col-lg-4 d-xl-none"></div>
 
-            <ComboSimple
-              name="tamanoEmpresaId"
-              label="Tamaño Entidad Empleadora"
-              datos={tamanosDeEmpresas}
-              descripcion={'descripcion'}
-              idElemento={'idtamanoempresa'}
-              className="col-12 col-md-6 col-lg-4 col-xl-3"
-            />
+            <GuiaUsuario guia={guia && listaGuia[3].activo} placement="top-start" target={tamano}>
+              Cantidad de personas trabajadoras en la entidad empleadora <br />
+              <br />
+              <div className="text-end">
+                <button
+                  className="btn btn-sm text-white"
+                  onClick={() =>
+                    setlistaGuia([
+                      { indice: 1, nombre: 'Formulario', activo: false },
+                      { indice: 2, nombre: 'Tipo entidad empleadora', activo: false },
+                      { indice: 3, nombre: 'CCAF', activo: true },
+                      { indice: 4, nombre: 'Tamaño Empresa', activo: false },
+                    ])
+                  }
+                  style={{
+                    border: '1px solid white',
+                  }}>
+                  <i className="bi bi-arrow-left"></i>
+                  &nbsp; Anterior
+                </button>
+                &nbsp;
+                <button
+                  className="btn btn-sm text-white"
+                  onClick={() =>
+                    setlistaGuia([
+                      { indice: 1, nombre: 'Formulario', activo: true },
+                      { indice: 2, nombre: 'Tipo entidad empleadora', activo: false },
+                      { indice: 3, nombre: 'CCAF', activo: false },
+                      { indice: 4, nombre: 'Tamaño Empresa', activo: false },
+                    ])
+                  }
+                  style={{
+                    border: '1px solid white',
+                  }}>
+                  Continuar &nbsp;
+                  <i className="bi bi-arrow-right"></i>
+                </button>
+              </div>
+            </GuiaUsuario>
+
+            <div
+              className={`col-12 col-md-6 col-lg-4 col-xl-3 ${
+                guia && listaGuia[3].activo && 'overlay-marco'
+              }`}
+              ref={tamano}>
+              <ComboSimple
+                name="tamanoEmpresaId"
+                label="Tamaño Entidad Empleadora"
+                datos={tamanosDeEmpresas}
+                descripcion={'descripcion'}
+                idElemento={'idtamanoempresa'}
+              />
+            </div>
 
             <ComboSimple
               name="sistemaRemuneracionId"
